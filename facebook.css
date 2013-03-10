@@ -18,6 +18,23 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+/* administration pages */
+
+#admin_content td {
+    vertical-align:middle;
+}
+
+#admin_content button {
+    border:none;
+}
+
+#admin_content button:hover {
+    background-image: inherit;
+    background-image:url(/themes/_administration/images/admin_icon_sprite.png);
+    background-position: -40px -154px;
+    background-color: transparent;
+}
+
 /* login and registration pages */
 
 #login-form,

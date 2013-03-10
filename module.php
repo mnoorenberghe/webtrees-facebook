@@ -273,6 +273,10 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $this->error_page($message);
         } else { // This is a new Facebook user who may or may not already have a manual account
 
+            if (!WT_Site::preference('USE_REGISTRATION_MODULE')) {
+                $this->error_page('<p>' . WT_I18N::translate('The administrator has disabled registrations.') . '</p>');
+            }
+
             // check if the username is already in use
             $username = $facebookUser->username;
             if (get_user_id($username)) {

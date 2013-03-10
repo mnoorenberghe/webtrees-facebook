@@ -29,6 +29,9 @@
     <?php echo WT_I18N::translate('App Secret:'); ?>
     <input type="text" name="app_secret" value="<?php echo get_module_setting($mod_name, 'app_secret', ''); ?>" size="40" />
   </label>
+  <?php if (!WT_Site::preference('USE_REGISTRATION_MODULE')) { ?>
+  <p><strong><?php echo WT_I18N::translate('NOTE: New user registration is disabled in Site configuration so only existing users will be able to login.');?></strong></p>
+  <?php } ?>
   <p>
     <label>
       <input type="checkbox" name="require_verified" value="1"<?php echo (get_module_setting($mod_name, 'require_verified', 1) ? 'checked="checked" ' : ''); ?> />

@@ -1,7 +1,9 @@
 webtrees Facebook Module
 ========================
 
-webtrees 1.3.2 or higher is recommended.
+* webtrees 1.3.2 or higher is recommended.
+* 'Allow visitors to request account registration' must be enabled in Site Configuration if you want to allow new users via Facebook.
+
 
 ## Installation ##
 1.
@@ -10,7 +12,6 @@ webtrees 1.3.2 or higher is recommended.
 
 ## TODO ##
 * handle transition from internal account to FB if using different email address.
-* support existing site configuration settings to disable signup?
 * support assigning gedcom-specific info: Default individual, Individual record, & Role.
 * make sure facebook_username is unique between users.
 * ensure there is sufficient logging.

@@ -1,5 +1,5 @@
 <?php
-// Facebook Module
+// Facebook Module for webtrees
 //
 // Copyright (C) 2012 Matthew N.
 //
@@ -14,8 +14,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+// along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 if (!defined('WT_WEBTREES')) {
     header('HTTP/1.0 403 Forbidden');
@@ -111,7 +110,6 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         $unlinkedOptions = $this->user_options($unlinkedUsers);
 
         require 'templates/admin.php';
-
     }
 
     private function connect() {
@@ -177,7 +175,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $user = json_decode(file_get_contents($graph_url));
             $this->login_or_register($user);
         } else {
-            $this->error_page("The state does not match. You may been tricked to load this page.");
+            $this->error_page(WT_I18N::translate("The state does not match. You may been tricked to load this page."));
         }
     }
 
@@ -305,7 +303,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 set_user_setting($user_id, 'sessiontime',       0);
                 $user_created_ok = true;
             } else {
-                $this->error_page(WT_I18N::translate('<p>Unable to create your account.  Please try again.') . '</p>' .
+                $this->error_page('<p>' . WT_I18N::translate('Unable to create your account.  Please try again.') . '</p>' .
                                   '<div class="back"><a href="javascript:history.back()">' . WT_I18N::translate('Back') . '</a></div>');
             }
 
@@ -345,11 +343,13 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         global $controller;
 
         $controller->addExternalJavascript(WT_MODULES_DIR . $this->getName() . '/facebook.js?v=' . WT_FACEBOOK_VERSION);
-        //$controller->addExternalStylesheet(WT_MODULES_DIR . $this->getName() . '/facebook.css?v=' . WT_FACEBOOK_VERSION); // Only in 1.3.3+
-
-        $controller->addInlineJavaScript("
+        if (method_exists($controller, 'addExternalStylesheet')) {
+          $controller->addExternalStylesheet(WT_MODULES_DIR . $this->getName() . '/facebook.css?v=' . WT_FACEBOOK_VERSION); // Only in 1.3.3+
+        } else {
+          $controller->addInlineJavaScript("
             $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');",
             WT_Controller_Base::JS_PRIORITY_LOW);
+        }
 
         return null;
     }

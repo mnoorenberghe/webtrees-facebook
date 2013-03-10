@@ -74,8 +74,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             set_module_setting($mod_name, 'require_verified', safe_POST('require_verified', WT_REGEX_INTEGER, false));
         } else if (safe_POST('addLink')) {
             $user_id = safe_POST('user_id', WT_REGEX_INTEGER);
-            $facebook_username = trim(safe_POST('facebook_username', WT_REGEX_USERNAME));
-            if ($user_id && $facebook_username) {
+            $facebook_username = $this->cleanseFacebookUsername(safe_POST('facebook_username', WT_REGEX_USERNAME));
+            if ($user_id && $facebook_username && !$this->get_user_id_from_facebook_username($facebook_username)) {
                 set_user_setting($user_id, self::user_setting_facebook_username, $facebook_username);
             }
         } else if (safe_POST('deleteLink')) {
@@ -84,8 +84,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 set_user_setting($user_id, self::user_setting_facebook_username, NULL);
             }
         } else if (safe_POST('savePreapproved')) {
-            $facebook_username = trim(safe_POST('facebook_username', WT_REGEX_USERNAME));
-            if ($facebook_username) {
+            $facebook_username = $this->cleanseFacebookUsername(safe_POST('facebook_username', WT_REGEX_USERNAME));
+            if ($facebook_username && !$this->get_user_id_from_facebook_username($facebook_username)) {
                 $preApproved[$facebook_username] = new stdClass();
                 set_module_setting($mod_name, 'preapproved', serialize($preApproved));
             }
@@ -205,7 +205,13 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         $statement = WT_DB::prepare(
                                     "SELECT SQL_CACHE user_id FROM `##user_setting` WHERE setting_name=? AND setting_value=?"
                                    );
-	return $statement->execute(array(self::user_setting_facebook_username, $facebookUsername))->fetchOne();
+	return $statement->execute(array(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUsername)))->fetchOne();
+    }
+
+    // Guidelines from https://www.facebook.com/help/105399436216001
+    private function cleanseFacebookUsername($username) {
+        // Case and periods don't matter
+        return strtolower(trim(str_replace('.', '', $username)));
     }
 
     private function login($user_id) {
@@ -266,7 +272,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                     $message=WT_I18N::translate('This account has not been approved.  Please wait for an administrator to approve it.');
                     break;
                 default:
-                    set_user_setting($user_id, self::user_setting_facebook_username, $facebookUser->username);
+                    set_user_setting($user_id, self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username));
                     // redirect to the homepage
                     $message = '<script>top.location.href = "'.WT_SERVER_NAME.WT_SCRIPT_PATH.'";</script>';
             }
@@ -293,7 +299,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             // From login.php:
             AddToLog('User registration requested for: ' . $username, 'auth');
             if ($user_id = create_user($username, $facebookUser->name, $facebookUser->email, $password)) {
-                set_user_setting($user_id, self::user_setting_facebook_username, $facebookUser->username);
+                set_user_setting($user_id, self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username));
                 set_user_setting($user_id, 'language',          $WT_SESSION->locale);
                 set_user_setting($user_id, 'verified',          1);
                 set_user_setting($user_id, 'verified_by_admin', !$REQUIRE_ADMIN_AUTH_REGISTRATION || isset($preApproved[$facebookUser->username]));

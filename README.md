@@ -13,7 +13,8 @@ webtrees Facebook Module
 ## TODO ##
 * handle transition from internal account to FB if using different email address.
 * support assigning gedcom-specific info: Default individual, Individual record, & Role.
-* make sure facebook_username is unique between users.
 * ensure there is sufficient logging.
 * support redirecting to destination page via $url
 * allow user comment on account creation
+* Remove users from pre-approved list when they are linked.
+* Test making FB the primary login mechanism by setting the login URL

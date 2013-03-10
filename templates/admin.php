@@ -15,6 +15,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+$usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::translate("Facebook usernames can only contain alphanumeric characters (A-Z, 0-9) or a period") . '"';
+
 ?>
 
 <link rel="stylesheet" href="<?php echo WT_MODULES_DIR . $this->getName(); ?>/facebook.css?v=<?php echo  WT_FACEBOOK_VERSION; ?>" />
@@ -71,7 +74,7 @@
     ?>
     <tr>
       <td colspan="2"><select name="user_id"><?php echo $unlinkedOptions; ?></select></td>
-      <td><input type="text" name="facebook_username"/></td>
+      <td><input type="text" name="facebook_username" <?php echo $usernameValidationAttrs; ?> /></td>
       <td><input type="submit" name="addLink" value="<?php echo WT_I18N::translate('Add'); ?>"></td>
     </tr>
   </tbody>
@@ -102,7 +105,7 @@
       }
     ?>
     <tr>
-      <td><input type="text" name="facebook_username"/></td>
+      <td><input type="text" name="facebook_username" <?php echo $usernameValidationAttrs; ?> /></td>
       <td><input type="submit" name="savePreapproved" value="<?php echo WT_I18N::translate('Add'); ?>"></td>
     </tr>
   </tbody>

@@ -12,12 +12,11 @@ webtrees Facebook Module
 
 ## TODO ##
 * handle transition from internal account to FB if using different email address.
-* support redirecting to destination page via $url
-* support assigning gedcom-specific info: Default individual, Individual record, & Role***.
-* Test default role
 * ensure there is sufficient logging.
 * allow user comment on account creation
-* Remove users from pre-approved list when they are linked.
+* Remove users from pre-approved list when they are linked?
 * Test making FB the primary login mechanism by setting the login URL
-* double-check window.location usage
 * check if bad API keys
+* test with multiple GEDCOMs
+* more validation on pre-approved users
+* respect new pre-approval settings at registration time

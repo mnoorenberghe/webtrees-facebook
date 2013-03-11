@@ -66,6 +66,14 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         $mod_name = $this->getName();
         $preApproved = unserialize(get_module_setting($mod_name, 'preapproved'));
 
+        $ALL_EDIT_OPTIONS=array( // from admin_users.php
+          'none'  => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Visitor'),
+          'access'=> /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Member'),
+          'edit'  => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Editor'),
+          'accept'=> /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Moderator'),
+          'admin' => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Manager')
+        );
+
         if (safe_POST('saveAPI')) {
             set_module_setting($mod_name, 'app_id', safe_POST('app_id', WT_REGEX_ALPHANUM));
             set_module_setting($mod_name, 'app_secret', safe_POST('app_secret', WT_REGEX_ALPHANUM));
@@ -81,12 +89,23 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             if ($user_id) {
                 set_user_setting($user_id, self::user_setting_facebook_username, NULL);
             }
-        } else if (safe_POST('savePreapproved')) {
-            $facebook_username = $this->cleanseFacebookUsername(safe_POST('facebook_username', WT_REGEX_USERNAME));
-            if ($facebook_username && !$this->get_user_id_from_facebook_username($facebook_username)) {
-                $preApproved[$facebook_username] = new stdClass();
-                set_module_setting($mod_name, 'preapproved', serialize($preApproved));
+        } else if (safe_POST('addPreapproved')) {
+            $table = safe_POST('preApproved');
+            $row = $table['new'];
+            $facebook_username = safe_REQUEST($row, 'facebook_username', WT_REGEX_USERNAME);
+            unset($row['facebook_username']);
+            //var_dump($row);exit;
+            $this->appendPreapproved($preApproved, $facebook_username, $row);
+            //var_dump($preApproved);
+            set_module_setting($mod_name, 'preapproved', serialize($preApproved));
+        } else if (safe_POST('savePreapproved')) { // TODO
+            $table = safe_POST('preApproved');
+            unset($table['new']);
+            foreach($table as $facebook_username => $row) {
+                $this->appendPreapproved($preApproved, $facebook_username, $row);
             }
+            //var_dump($preApproved);
+            set_module_setting($mod_name, 'preapproved', serialize($preApproved));
         } else if (safe_POST('deletePreapproved')) {
             $facebook_username = trim(safe_POST('deletePreapproved', WT_REGEX_USERNAME));
             if ($facebook_username) {
@@ -107,7 +126,25 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
         $unlinkedOptions = $this->user_options($unlinkedUsers);
 
+        require_once WT_ROOT.'includes/functions/functions_edit.php';
         require 'templates/admin.php';
+    }
+
+    private function appendPreapproved(&$preApproved, $facebook_username, $row) {
+        $facebook_username = $this->cleanseFacebookUsername($facebook_username);
+        if (!$facebook_username || $this->get_user_id_from_facebook_username($facebook_username)) {
+            return;
+        }
+
+        $preApproved[$facebook_username] = array();
+        foreach ($row as $gedcom => $settings) {
+            // TODO: check valid gedcom
+            $preApproved[$facebook_username][$gedcom] = array(
+                'rootid' => safe_REQUEST($settings, 'rootid', WT_REGEX_XREF),
+                'gedcomid' => safe_REQUEST($settings, 'gedcomid', WT_REGEX_XREF),
+                'canedit' => safe_REQUEST($settings, 'canedit', WT_REGEX_ALPHA)
+            );
+        }
     }
 
     private function isSetup() {
@@ -393,6 +430,15 @@ $(document).ready(function() {
             ->pageHeader();
         echo '<div class="warning">'.$message.'</div>';
         exit;
+    }
+
+    private function print_findindi_link($element_id, $indiname='', $gedcomTitle=WT_GEDURL) {
+	return '<a href="#" onclick="findIndi(document.getElementById(\''.$element_id.'\'), document.getElementById(\''.$indiname.'\'), \''.$gedcomTitle.'\'); return false;" class="icon-button_indi" title="'.WT_I18N::translate('Find an individual').'"></a>';
+    }
+
+    private function indiField($field, $value='', $gedcomTitle=WT_GEDURL) {
+        return '<input type="text" size="12" name="'.$field.'" id="'.$field.'" value="'.htmlspecialchars($value).'"> '
+            . print_findindi_link($field, '', $gedcomTitle);
     }
 
     /* Inject JS into some pages (via a menu) to show the Facebook login button */

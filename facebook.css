@@ -34,6 +34,10 @@
     background-color: transparent;
 }
 
+#admin_content tr.preapproved_row_add:not(:last-of-type) td {
+    border-bottom: 1px solid black;
+}
+
 /* login and registration pages */
 
 #login-form,

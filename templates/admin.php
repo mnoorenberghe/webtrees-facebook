@@ -90,25 +90,72 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
 <table>
   <thead>
     <tr>
-      <th><?php echo WT_I18N::translate('Facebook Account'); ?></th>
+      <th rowspan="2"><?php echo WT_I18N::translate('Facebook Account'); ?></th>
+      <?php
+        foreach (WT_Tree::getAll() as $tree) {
+          echo '<th colspan="3">', $tree->tree_title_html, '</th>';
+        }
+      ?>
+    </tr>
+    <tr>
+      <?php foreach (WT_Tree::getAll() as $tree) { ?>
+      <th><?php echo WT_I18N::translate('Default individual'), help_link('default_individual'); ?></th>
+      <th><?php echo WT_I18N::translate('Individual record'), help_link('useradmin_gedcomid'); ?></th>
+      <th><?php echo WT_I18N::translate('Role'), help_link('role'); ?></th>
+
+      <?php } ?>
     </tr>
   </thead>
   <tbody>
+    <tr class="preapproved_row_add">
+      <td><input type="text" name="preApproved[new][facebook_username]" <?php echo $usernameValidationAttrs; ?> /></td>
+      <?php
+        foreach (WT_Tree::getAll() as $tree) {
+          echo '<td>',
+          $this->indiField('preApproved[new]['.$tree->tree_id.'][rootid]',
+                           '', $tree->tree_name_url), '</td>',
+          '<td>',
+          $this->indiField('preApproved[new]['.$tree->tree_id.'][gedcomid]',
+                           '', $tree->tree_name_url), '</td>';
+        }
+      ?>
+      <td>
+        <?php echo select_edit_control('preApproved[new]['.$tree->tree_id.'][canedit]',
+                                       $ALL_EDIT_OPTIONS, NULL, NULL);
+        ?>
+
+      <td><input type="submit" name="addPreapproved" value="<?php echo WT_I18N::translate('Add'); ?>"></td>
+    </tr>
     <?php
       if (!empty($preApproved)) {
         foreach ($preApproved as $fbUsername => $details) {
           echo '
 <tr>
-      <td><a href="https://www.facebook.com/'.$fbUsername.'">'.$fbUsername.'</a></td>
+      <td><a href="https://www.facebook.com/'.$fbUsername.'">'.$fbUsername.'</a></td>';
+          foreach (WT_Tree::getAll() as $tree) {
+            echo '<td>',
+            $this->indiField('preApproved['.$fbUsername.']['.$tree->tree_id.'][rootid]',
+                             @$details[$tree->tree_id]['rootid'], $tree->tree_name_url), '</td>',
+            '<td>',
+            $this->indiField('preApproved['.$fbUsername.']['.$tree->tree_id.'][gedcomid]',
+                             @$details[$tree->tree_id]['gedcomid'], $tree->tree_name_url), '</td>',
+            '<td>',
+            select_edit_control('preApproved['.$fbUsername.']['.$tree->tree_id.'][canedit]',
+                                $ALL_EDIT_OPTIONS, NULL, @$details[$tree->tree_id]['canedit']),
+	    '</td>';
+          }
+          echo '
       <td><button name="deletePreapproved" value="'.$fbUsername.'" class="icon-delete"></button></td>
     </tr>';
         }
       }
     ?>
-    <tr>
-      <td><input type="text" name="facebook_username" <?php echo $usernameValidationAttrs; ?> /></td>
-      <td><input type="submit" name="savePreapproved" value="<?php echo WT_I18N::translate('Add'); ?>"></td>
-    </tr>
   </tbody>
 </table>
+<p><input type="submit" name="savePreapproved" value="<?php echo WT_I18N::translate('Save'); ?>"></p>
 </form>
+<script>
+function paste_id(value) {
+  pastefield.value=value;
+}
+</script>

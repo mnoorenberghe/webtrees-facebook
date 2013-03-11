@@ -21,6 +21,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
 ?>
 
 <link rel="stylesheet" href="<?php echo WT_MODULES_DIR . $this->getName(); ?>/facebook.css?v=<?php echo  WT_FACEBOOK_VERSION; ?>" />
+<h3><?php echo $this->getTitle(); ?></h3>
 <h4><?php echo WT_I18N::translate('Facebook API'); ?></h4>
 <form method="post" action="">
   <p><?php echo WT_I18N::translate('The App ID and secret can be setup at %s.', '<a href="https://developers.facebook.com/apps">https://developers.facebook.com/apps</a>'); ?></p>

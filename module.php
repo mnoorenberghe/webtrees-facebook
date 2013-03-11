@@ -63,8 +63,6 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             ->setPageTitle($this->getTitle())
             ->pageHeader();
 
-        echo '<h3>', $this->getTitle(), '</h3>';
-
         $mod_name = $this->getName();
         $preApproved = unserialize(get_module_setting($mod_name, 'preapproved'));
 
@@ -112,18 +110,35 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         require 'templates/admin.php';
     }
 
+    private function isSetup() {
+        $mod_name = $this->getName();
+        $app_id = get_module_setting($mod_name, 'app_id');
+        $app_secret = get_module_setting($mod_name, 'app_secret');
+
+        return !empty($app_id) && !empty($app_secret);
+    }
+
     private function connect() {
         global $WT_SESSION;
 
-        // Redirect to the homepage if the user is already logged-in.
+        $url = safe_GET('url',  WT_REGEX_URL, '');
+        // If we’ve clicked login from the login page, we don’t want to go back there.
+        if (strpos($url, 'login.php') === 0
+            || (strpos($url, 'mod=facebook') !== false
+                && strpos($url, 'mod_action=connect') !== false)) {
+            $url = '';
+        }
+
+        // Redirect to the homepage/$url if the user is already logged-in.
         if ($WT_SESSION->wt_user) {
-            header('Location: ' . WT_SCRIPT_PATH);
+            header('Location: ' . WT_SCRIPT_PATH . $url);
             exit;
         }
 
         $app_id = get_module_setting($this->getName(), 'app_id');
         $app_secret = get_module_setting($this->getName(), 'app_secret');
-        $connect_url = WT_SERVER_NAME . WT_SCRIPT_PATH . "module.php?mod=".$this->getName()."&mod_action=connect";
+        $connect_url = $this->getConnectURL($url);
+        //die($connect_url); // TODO
 
         if (!$app_id || !$app_secret) {
             $this->error_page(WT_I18N::translate('Facebook logins have not been setup by the administrator.'));
@@ -155,7 +170,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 . $WT_SESSION->facebook_access_token;
 
             $user = json_decode(file_get_contents($graph_url));
-            $this->login_or_register($user);
+            $this->login_or_register($user, $url);
         } else if (!empty($WT_SESSION->facebook_state) && ($WT_SESSION->facebook_state === $_REQUEST['state'])) {
             // User has already been redirected to login dialog.
             // Exchange the code for an access token.
@@ -163,7 +178,11 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 . "client_id=" . $app_id . "&redirect_uri=" . urlencode($connect_url)
                 . "&client_secret=" . $app_secret . "&code=" . $code;
 
-            $response = file_get_contents($token_url);
+
+            $response = @file_get_contents($token_url);
+            if ($response === FALSE) {
+                $this->error_page(WT_I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login."));
+            }
             $params = null;
             parse_str($response, $params);
 
@@ -171,9 +190,12 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
             $graph_url = "https://graph.facebook.com/me?access_token="
                 . $WT_SESSION->facebook_access_token;
-
-            $user = json_decode(file_get_contents($graph_url));
-            $this->login_or_register($user);
+            $meResponse = @file_get_contents($graph_url);
+            if ($meResponse === FALSE) {
+                $this->error_page(WT_I18N::translate("Could not fetch your information from Facebook. Please try again."));
+            }
+            $user = json_decode($meResponse);
+            $this->login_or_register($user, $url);
         } else {
             $this->error_page(WT_I18N::translate("The state does not match. You may been tricked to load this page."));
         }
@@ -214,6 +236,11 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         return strtolower(trim(str_replace('.', '', $username)));
     }
 
+    private function getConnectURL($returnTo='') {
+        return WT_SERVER_NAME . WT_SCRIPT_PATH . "module.php?mod=" . $this->getName()
+            . "&mod_action=connect&url=" . urlencode($returnTo);
+    }
+
     private function login($user_id) {
         global $WT_SESSION;
         $user_name = get_user_name($user_id);
@@ -244,7 +271,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
      *
      * @param string $facebookUser Facebook username
      */
-    private function login_or_register(&$facebookUser) {
+    private function login_or_register(&$facebookUser, $url='') {
 	global $WT_SESSION;
         $REQUIRE_ADMIN_AUTH_REGISTRATION = WT_Site::preference('REQUIRE_ADMIN_AUTH_REGISTRATION');
 
@@ -273,8 +300,9 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                     break;
                 default:
                     set_user_setting($user_id, self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username));
-                    // redirect to the homepage
-                    $message = '<script>top.location.href = "'.WT_SERVER_NAME.WT_SCRIPT_PATH.'";</script>';
+                    // redirect to the homepage/$url
+                    header('Location: ' . WT_SCRIPT_PATH . $url);
+                    return;
             }
             $this->error_page($message);
         } else { // This is a new Facebook user who may or may not already have a manual account
@@ -294,15 +322,15 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $password = md5(uniqid(rand(), TRUE));
             $hashcode = md5(uniqid(rand(), true));
             $preApproved = unserialize(get_module_setting($this->getName(), 'preapproved'));
-            $user_created_ok = false;
 
             // From login.php:
             AddToLog('User registration requested for: ' . $username, 'auth');
             if ($user_id = create_user($username, $facebookUser->name, $facebookUser->email, $password)) {
+                $verifiedByAdmin = !$REQUIRE_ADMIN_AUTH_REGISTRATION || isset($preApproved[$facebookUser->username]);
                 set_user_setting($user_id, self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username));
                 set_user_setting($user_id, 'language',          $WT_SESSION->locale);
                 set_user_setting($user_id, 'verified',          1);
-                set_user_setting($user_id, 'verified_by_admin', !$REQUIRE_ADMIN_AUTH_REGISTRATION || isset($preApproved[$facebookUser->username]));
+                set_user_setting($user_id, 'verified_by_admin', $verifiedByAdmin);
                 set_user_setting($user_id, 'reg_timestamp',     date('U'));
                 set_user_setting($user_id, 'reg_hashcode',      $hashcode);
                 set_user_setting($user_id, 'contactmethod',     'messaging2');
@@ -311,20 +339,48 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 set_user_setting($user_id, 'auto_accept',       0);
                 set_user_setting($user_id, 'canadmin',          0);
                 set_user_setting($user_id, 'sessiontime',       0);
-                $user_created_ok = true;
-            } else {
-                $this->error_page('<p>' . WT_I18N::translate('Unable to create your account.  Please try again.') . '</p>' .
-                                  '<div class="back"><a href="javascript:history.back()">' . WT_I18N::translate('Back') . '</a></div>');
-            }
+                set_user_setting($user_id, 'comment',           @$facebookUser->birthday);
 
-            if ($user_created_ok) {
-                echo '<form id="verify-form" name="verify-form" method="post" action="', WT_LOGIN_URL, '">';
+                // We need jQuery below
+                global $controller;
+                $controller = new WT_Controller_Base();
+                $controller
+                    ->setPageTitle($this->getTitle())
+                    ->pageHeader();
+
+                echo '<form id="verify-form" name="verify-form" method="post" action="', WT_LOGIN_URL, '" class="ui-autocomplete-loading" style="width:16px;height:16px;padding:0">';
                 echo $this->hidden_input("action", "verify_hash");
                 echo $this->hidden_input("user_name", $username);
                 echo $this->hidden_input("user_password", $password);
                 echo $this->hidden_input("user_hashcode", $hashcode);
                 echo '</form>';
-                echo '<script>document.getElementById("verify-form").submit()</script>';
+
+                if ($verifiedByAdmin) {
+                    $controller->addInlineJavaScript('
+function verify_hash_success() {
+  // now the account is approved but not logged in. Now actually login for the user.
+  // TODO: investigate if this could cause a loop.
+  if (!parseInt(WT_USER_ID, 10)) {
+    window.top.location = "' . $this->getConnectURL($url) . '";
+  }
+}
+
+function verify_hash_failure() {
+  alert("' . WT_I18N::translate("There was an error verifying your account. Contact the site administrator if you are unable to access the site.")  . '");
+  window.top.location = "' . WT_SCRIPT_PATH . $url . '";
+}
+$(document).ready(function() {
+  console.log("before post");
+  $.post("' . WT_LOGIN_URL . '", $("#verify-form").serialize(), verify_hash_success).fail(verify_hash_failure);
+});
+');
+                } else {
+                    echo '<script>document.getElementById("verify-form").submit()</script>';
+                }
+
+            } else {
+                $this->error_page('<p>' . WT_I18N::translate('Unable to create your account.  Please try again.') . '</p>' .
+                                  '<div class="back"><a href="javascript:history.back()">' . WT_I18N::translate('Back') . '</a></div>');
             }
         }
     }
@@ -351,6 +407,10 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         // We don't actually have a menu - this is just a convenient "hook" to execute
         // code at the right time during page execution
         global $controller;
+
+        if (!$this->isSetup()) {
+            return null;
+        }
 
         $controller->addExternalJavascript(WT_MODULES_DIR . $this->getName() . '/facebook.js?v=' . WT_FACEBOOK_VERSION);
         if (method_exists($controller, 'addExternalStylesheet')) {

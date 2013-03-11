@@ -17,15 +17,21 @@
   along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-$(document).ready(function init_facebook() {
+// from http://stackoverflow.com/a/5158301
+function facebook_getParameterByName(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
 
+$(document).ready(function init_facebook() {
   $("#login-form, #register-form").before(
     '<div id="facebook-login-box" style="display: inline-block">' +
     '<form id="login-form" action="module.php" method="get">' +
     '<input type="hidden" name="mod" value="facebook"/>' +
     '<input type="hidden" name="mod_action" value="connect"/>' +
+    '<input type="hidden" name="url" value="" id="facebook_return_url"/>' +
     '<button id="facebook-login-button">Login with Facebook</button>' +
     '</form>' +
     '</div>');
-
+    $("#facebook_return_url").attr('value', facebook_getParameterByName('url'));
 });

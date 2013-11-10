@@ -57,7 +57,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     }
 
     private function admin() {
-        $controller = new WT_Controller_Base();
+        $controller = new WT_Controller_Page();
         $controller
             ->requireAdminLogin()
             ->setPageTitle($this->getTitle())
@@ -74,40 +74,40 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
           'admin' => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Manager')
         );
 
-        if (safe_POST('saveAPI')) {
-            set_module_setting($mod_name, 'app_id', safe_POST('app_id', WT_REGEX_ALPHANUM));
-            set_module_setting($mod_name, 'app_secret', safe_POST('app_secret', WT_REGEX_ALPHANUM));
-            set_module_setting($mod_name, 'require_verified', safe_POST('require_verified', WT_REGEX_INTEGER, false));
-        } else if (safe_POST('addLink')) {
-            $user_id = safe_POST('user_id', WT_REGEX_INTEGER);
-            $facebook_username = $this->cleanseFacebookUsername(safe_POST('facebook_username', WT_REGEX_USERNAME));
+        if (WT_Filter::post('saveAPI')) {
+            set_module_setting($mod_name, 'app_id', WT_Filter::post('app_id', WT_REGEX_ALPHANUM));
+            set_module_setting($mod_name, 'app_secret', WT_Filter::post('app_secret', WT_REGEX_ALPHANUM));
+            set_module_setting($mod_name, 'require_verified', WT_Filter::post('require_verified', WT_REGEX_INTEGER, false));
+        } else if (WT_Filter::post('addLink')) {
+            $user_id = WT_Filter::post('user_id', WT_REGEX_INTEGER);
+            $facebook_username = $this->cleanseFacebookUsername(WT_Filter::post('facebook_username', WT_REGEX_USERNAME));
             if ($user_id && $facebook_username && !$this->get_user_id_from_facebook_username($facebook_username)) {
                 set_user_setting($user_id, self::user_setting_facebook_username, $facebook_username);
             }
-        } else if (safe_POST('deleteLink')) {
-            $user_id = safe_POST('deleteLink', WT_REGEX_INTEGER);
+        } else if (WT_Filter::post('deleteLink')) {
+            $user_id = WT_Filter::post('deleteLink', WT_REGEX_INTEGER);
             if ($user_id) {
                 set_user_setting($user_id, self::user_setting_facebook_username, NULL);
             }
-        } else if (safe_POST('addPreapproved')) {
-            $table = safe_POST('preApproved');
+        } else if (WT_Filter::post('addPreapproved')) {
+            $table = WT_Filter::post('preApproved');
             $row = $table['new'];
-            $facebook_username = safe_REQUEST($row, 'facebook_username', WT_REGEX_USERNAME);
+            $facebook_username = WT_Filter::post($row, 'facebook_username', WT_REGEX_USERNAME);
             unset($row['facebook_username']);
             //var_dump($row);exit;
             $this->appendPreapproved($preApproved, $facebook_username, $row);
             //var_dump($preApproved);
             set_module_setting($mod_name, 'preapproved', serialize($preApproved));
-        } else if (safe_POST('savePreapproved')) { // TODO
-            $table = safe_POST('preApproved');
+        } else if (WT_Filter::post('savePreapproved')) { // TODO
+            $table = WT_Filter::post('preApproved');
             unset($table['new']);
             foreach($table as $facebook_username => $row) {
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
             }
             //var_dump($preApproved);
             set_module_setting($mod_name, 'preapproved', serialize($preApproved));
-        } else if (safe_POST('deletePreapproved')) {
-            $facebook_username = trim(safe_POST('deletePreapproved', WT_REGEX_USERNAME));
+        } else if (WT_Filter::post('deletePreapproved')) {
+            $facebook_username = trim(WT_Filter::post('deletePreapproved', WT_REGEX_USERNAME));
             if ($facebook_username) {
                 unset($preApproved[$facebook_username]);
                 set_module_setting($mod_name, 'preapproved', serialize($preApproved));
@@ -140,9 +140,9 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         foreach ($row as $gedcom => $settings) {
             // TODO: check valid gedcom
             $preApproved[$facebook_username][$gedcom] = array(
-                'rootid' => safe_REQUEST($settings, 'rootid', WT_REGEX_XREF),
-                'gedcomid' => safe_REQUEST($settings, 'gedcomid', WT_REGEX_XREF),
-                'canedit' => safe_REQUEST($settings, 'canedit', WT_REGEX_ALPHA)
+                                                              'rootid' => WT_Filter::post($settings, 'rootid', WT_REGEX_XREF),
+                                                              'gedcomid' => WT_Filter::post($settings, 'gedcomid', WT_REGEX_XREF),
+                                                              'canedit' => WT_Filter::post($settings, 'canedit', WT_REGEX_ALPHA)
             );
         }
     }
@@ -158,7 +158,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     private function connect() {
         global $WT_SESSION;
 
-        $url = safe_GET('url',  WT_REGEX_URL, '');
+        $url = WT_Filter::getUrl('url', '');
         // If we’ve clicked login from the login page, we don’t want to go back there.
         if (strpos($url, 'login.php') === 0
             || (strpos($url, 'mod=facebook') !== false
@@ -175,7 +175,6 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         $app_id = get_module_setting($this->getName(), 'app_id');
         $app_secret = get_module_setting($this->getName(), 'app_secret');
         $connect_url = $this->getConnectURL($url);
-        //die($connect_url); // TODO
 
         if (!$app_id || !$app_secret) {
             $this->error_page(WT_I18N::translate('Facebook logins have not been setup by the administrator.'));
@@ -187,7 +186,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         if (!empty($_REQUEST['error'])) {
             unset($WT_SESSION->facebook_access_token);
             unset($WT_SESSION->facebook_state);
-            AddToLog('Facebook Error: ' . safe_REQUEST($_REQUEST, 'error') . '. Reason: ' . safe_REQUEST($_REQUEST, 'error_reason'), 'error');
+            Zend_Session::writeClose();
+            AddToLog('Facebook Error: ' . WT_Filter::post('error') . '. Reason: ' . WT_Filter::post('error_reason'), 'error');
             if ($_REQUEST['error_reason'] == 'user_denied') {
                 $this->error_page(WT_I18N::translate('You must allow access to your Facebook account in order to login with Facebook.'));
             } else {
@@ -199,13 +199,12 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $dialog_url = "https://www.facebook.com/dialog/oauth?client_id="
                 . $app_id . "&redirect_uri=" . urlencode($connect_url) . "&state="
                 . $WT_SESSION->facebook_state . "&scope=" . self::scope;
-
+            Zend_Session::writeClose();
             echo("<script> top.location.href='" . $dialog_url . "'</script>");
         } else if (!empty($WT_SESSION->facebook_access_token)) {
             // User has already authorized the app and we have a token so get their info.
             $graph_url = "https://graph.facebook.com/me?access_token="
                 . $WT_SESSION->facebook_access_token;
-
             $user = json_decode(file_get_contents($graph_url));
             $this->login_or_register($user, $url);
         } else if (!empty($WT_SESSION->facebook_state) && ($WT_SESSION->facebook_state === $_REQUEST['state'])) {
@@ -214,7 +213,6 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $token_url = "https://graph.facebook.com/oauth/access_token?"
                 . "client_id=" . $app_id . "&redirect_uri=" . urlencode($connect_url)
                 . "&client_secret=" . $app_secret . "&code=" . $code;
-
 
             $response = @file_get_contents($token_url);
             if ($response === FALSE) {
@@ -275,7 +273,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
     private function getConnectURL($returnTo='') {
         return WT_SERVER_NAME . WT_SCRIPT_PATH . "module.php?mod=" . $this->getName()
-            . "&mod_action=connect&url=" . urlencode($returnTo);
+            . "&mod_action=connect" . ($returnTo ? "&url=" . urlencode($returnTo) : ""); // Workaround FB bug where "&url=" (empty value) prevents OAuth
     }
 
     private function login($user_id) {
@@ -290,6 +288,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             // Whenever we change our authorisation level change the session ID
             Zend_Session::regenerateId();
             $WT_SESSION->wt_user = $user_id;
+            Zend_Session::writeClose();
             AddToLog('Login successful', 'auth');
             return $user_id;
         } elseif (!$is_admin && !$verified) {
@@ -380,7 +379,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
                 // We need jQuery below
                 global $controller;
-                $controller = new WT_Controller_Base();
+                $controller = new WT_Controller_Page();
                 $controller
                     ->setPageTitle($this->getTitle())
                     ->pageHeader();
@@ -424,7 +423,7 @@ $(document).ready(function() {
 
     private function error_page($message) {
         global $controller;
-        $controller = new WT_Controller_Base();
+        $controller = new WT_Controller_Page();
         $controller
             ->setPageTitle($this->getTitle())
             ->pageHeader();
@@ -437,8 +436,8 @@ $(document).ready(function() {
     }
 
     private function indiField($field, $value='', $gedcomTitle=WT_GEDURL) {
-        return '<input type="text" size="12" name="'.$field.'" id="'.$field.'" value="'.htmlspecialchars($value).'"> '
-            . print_findindi_link($field, '', $gedcomTitle);
+        return '<input type="text" size="5" name="'.$field.'" id="'.$field.'" value="'.htmlspecialchars($value).'"> '
+            . $this->print_findindi_link($field, '', $gedcomTitle);
     }
 
     /* Inject JS into some pages (via a menu) to show the Facebook login button */
@@ -459,13 +458,15 @@ $(document).ready(function() {
         }
 
         $controller->addExternalJavascript(WT_MODULES_DIR . $this->getName() . '/facebook.js?v=' . WT_FACEBOOK_VERSION);
+        /* Stylesheets added by addExternalStylesheet are never output
         if (method_exists($controller, 'addExternalStylesheet')) {
           $controller->addExternalStylesheet(WT_MODULES_DIR . $this->getName() . '/facebook.css?v=' . WT_FACEBOOK_VERSION); // Only in 1.3.3+
         } else {
+         */
           $controller->addInlineJavaScript("
             $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');",
-            WT_Controller_Base::JS_PRIORITY_LOW);
-        }
+            WT_Controller_Page::JS_PRIORITY_LOW);
+        //}
 
         return null;
     }

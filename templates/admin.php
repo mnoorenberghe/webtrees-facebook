@@ -87,28 +87,33 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
 <h4><?php echo WT_I18N::translate('Pre-approve users'); ?></h4>
 <form method="post" action="">
   <p><?php echo WT_I18N::translate("If you know a user's Facebook username but they don't have an account in webtrees, you can pre-approve one so they can login immediately the first time they visit."); ?></p>
-<table>
+<table id="preapproved">
   <thead>
     <tr>
       <th rowspan="2"><?php echo WT_I18N::translate('Facebook Account'); ?></th>
       <?php
+        $index = 0;
         foreach (WT_Tree::getAll() as $tree) {
-          echo '<th colspan="3">', $tree->tree_title_html, '</th>';
+          echo '<th colspan="3" class="'.($index++ % 2 ? 'odd' : 'even').'">', $tree->tree_name_html, '</th>';
         }
       ?>
     </tr>
     <tr>
-      <?php foreach (WT_Tree::getAll() as $tree) { ?>
-      <th><?php echo WT_I18N::translate('Default individual'), help_link('default_individual'); ?></th>
-      <th><?php echo WT_I18N::translate('Individual record'), help_link('useradmin_gedcomid'); ?></th>
-      <th><?php echo WT_I18N::translate('Role'), help_link('role'); ?></th>
+      <?php
+      $index = 0;
+      foreach (WT_Tree::getAll() as $tree) {
+        $class = ($index++ % 2 ? 'odd' : 'even');
+?>
+      <th class="<?php echo $class; ?>"><?php echo WT_I18N::translate('Default individual'), help_link('default_individual'); ?></th>
+      <th class="<?php echo $class; ?>"><?php echo WT_I18N::translate('Individual record'), help_link('useradmin_gedcomid'); ?></th>
+      <th class="<?php echo $class; ?>"><?php echo WT_I18N::translate('Role'), help_link('role'); ?></th>
 
       <?php } ?>
     </tr>
   </thead>
   <tbody>
     <tr class="preapproved_row_add">
-      <td><input type="text" name="preApproved[new][facebook_username]" <?php echo $usernameValidationAttrs; ?> /></td>
+      <td><input type="text" name="preApproved[new][facebook_username]" <?php echo $usernameValidationAttrs; ?> size="18"/></td>
       <?php
         foreach (WT_Tree::getAll() as $tree) {
           echo '<td>',
@@ -116,14 +121,12 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
                            '', $tree->tree_name_url), '</td>',
           '<td>',
           $this->indiField('preApproved[new]['.$tree->tree_id.'][gedcomid]',
-                           '', $tree->tree_name_url), '</td>';
+                           '', $tree->tree_name_url), '</td>',
+          '<td>',
+          select_edit_control('preApproved[new]['.$tree->tree_id.'][canedit]',
+                              $ALL_EDIT_OPTIONS, NULL, NULL), '</td>';
         }
       ?>
-      <td>
-        <?php echo select_edit_control('preApproved[new]['.$tree->tree_id.'][canedit]',
-                                       $ALL_EDIT_OPTIONS, NULL, NULL);
-        ?>
-
       <td><input type="submit" name="addPreapproved" value="<?php echo WT_I18N::translate('Add'); ?>"></td>
     </tr>
     <?php

@@ -29,13 +29,34 @@
 
 #admin_content button:hover {
     background-image: inherit;
-    background-image:url(/themes/_administration/images/admin_icon_sprite.png);
+    background-image: url(/themes/_administration/images/admin_icon_sprite.png);
     background-position: -40px -154px;
     background-color: transparent;
 }
 
 #admin_content tr.preapproved_row_add:not(:last-of-type) td {
     border-bottom: 1px solid black;
+}
+
+#admin_content #preapproved {
+    font-size: 11px;
+}
+
+#admin_content #preapproved th {
+    font-size: 10px;
+}
+
+#admin_content #preapproved td:not(:first-of-type) {
+    text-align:center;
+}
+
+#admin_content #preapproved input:not(:active):not(:focus) + a.icon-button_indi:not(:active):not(:focus),
+#admin_content #preapproved .icon-help {
+    display: none;
+}
+
+#admin_content #preapproved option {
+    padding-right: 3px;
 }
 
 /* login and registration pages */

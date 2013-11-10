@@ -92,13 +92,13 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         } else if (WT_Filter::post('addPreapproved')) {
             $table = WT_Filter::post('preApproved');
             $row = $table['new'];
-            $facebook_username = WT_Filter::post($row, 'facebook_username', WT_REGEX_USERNAME);
+            $facebook_username = WT_Filter::post('preApproved_new_facebook_username', WT_REGEX_USERNAME);
             unset($row['facebook_username']);
             //var_dump($row);exit;
             $this->appendPreapproved($preApproved, $facebook_username, $row);
             //var_dump($preApproved);
             set_module_setting($mod_name, 'preapproved', serialize($preApproved));
-        } else if (WT_Filter::post('savePreapproved')) { // TODO
+        } else if (WT_Filter::post('savePreapproved')) {
             $table = WT_Filter::post('preApproved');
             unset($table['new']);
             foreach($table as $facebook_username => $row) {
@@ -133,16 +133,17 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     private function appendPreapproved(&$preApproved, $facebook_username, $row) {
         $facebook_username = $this->cleanseFacebookUsername($facebook_username);
         if (!$facebook_username || $this->get_user_id_from_facebook_username($facebook_username)) {
+            echo '<div class="warning">' . WT_I18N::translate('User is already registered') . '</div>';
             return;
         }
 
         $preApproved[$facebook_username] = array();
         foreach ($row as $gedcom => $settings) {
-            // TODO: check valid gedcom
+            // TODO: check valid gedcom and possibly xref
             $preApproved[$facebook_username][$gedcom] = array(
-                                                              'rootid' => WT_Filter::post($settings, 'rootid', WT_REGEX_XREF),
-                                                              'gedcomid' => WT_Filter::post($settings, 'gedcomid', WT_REGEX_XREF),
-                                                              'canedit' => WT_Filter::post($settings, 'canedit', WT_REGEX_ALPHA)
+                                                              'rootid' => filter_var($settings['rootid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' .  WT_REGEX_XREF . ')$/u'))),
+                                                              'gedcomid' => filter_var($settings['gedcomid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_XREF . ')$/u'))),
+                                                              'canedit' => filter_var($settings['canedit'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_ALPHA . ')$/u')))
             );
         }
     }
@@ -184,10 +185,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         $code = @$_REQUEST["code"];
 
         if (!empty($_REQUEST['error'])) {
-            unset($WT_SESSION->facebook_access_token);
-            unset($WT_SESSION->facebook_state);
-            Zend_Session::writeClose();
-            AddToLog('Facebook Error: ' . WT_Filter::post('error') . '. Reason: ' . WT_Filter::post('error_reason'), 'error');
+            AddToLog('Facebook Error: ' . WT_Filter::get('error') . '. Reason: ' . WT_Filter::get('error_reason'), 'error'); // TODO: filter better?
             if ($_REQUEST['error_reason'] == 'user_denied') {
                 $this->error_page(WT_I18N::translate('You must allow access to your Facebook account in order to login with Facebook.'));
             } else {
@@ -422,7 +420,12 @@ $(document).ready(function() {
     }
 
     private function error_page($message) {
-        global $controller;
+        global $controller, $WT_SESSION;
+
+        unset($WT_SESSION->facebook_access_token);
+        unset($WT_SESSION->facebook_state);
+        Zend_Session::writeClose();
+
         $controller = new WT_Controller_Page();
         $controller
             ->setPageTitle($this->getTitle())

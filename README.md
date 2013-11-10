@@ -1,7 +1,7 @@
 webtrees Facebook Module
 ========================
 
-* webtrees 1.3.2 or higher is recommended.
+* webtrees 1.5.0 or higher is required.
 * 'Allow visitors to request account registration' must be enabled in Site Configuration if you want to allow new users via Facebook.
 
 
@@ -11,7 +11,7 @@ webtrees Facebook Module
 3.
 
 ## TODO ##
-* handle transition from internal account to FB if using different email address.
+* handle transition from internal account to FB if using different email address. - Maybe not a big deal if admin is approving since they can merge.
 * ensure there is sufficient logging.
 * allow user comment on account creation
 * Remove users from pre-approved list when they are linked?
@@ -20,3 +20,4 @@ webtrees Facebook Module
 * test with multiple GEDCOMs
 * more validation on pre-approved users
 * respect new pre-approval settings at registration time
+* CSRF protection

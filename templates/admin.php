@@ -113,7 +113,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
   </thead>
   <tbody>
     <tr class="preapproved_row_add">
-      <td><input type="text" name="preApproved[new][facebook_username]" <?php echo $usernameValidationAttrs; ?> size="18"/></td>
+      <td><input type="text" name="preApproved_new_facebook_username" <?php echo $usernameValidationAttrs; ?> size="18"/></td>
       <?php
         foreach (WT_Tree::getAll() as $tree) {
           echo '<td>',

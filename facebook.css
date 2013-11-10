@@ -27,11 +27,15 @@
     border:none;
 }
 
-#admin_content button:hover {
-    background-image: inherit;
-    background-image: url(/themes/_administration/images/admin_icon_sprite.png);
+.icon-delete:hover {
     background-position: -40px -154px;
+}
+
+[class^="icon-"]:hover, [class*=" icon-"]:hover {
+    background-image: inherit;
+    background-image: url(../../themes/_administration/css-1.5.0/images/admin_icon_sprite.png); /* TODO: will break when version number changes */
     background-color: transparent;
+    opacity: 0.6;
 }
 
 #admin_content tr.preapproved_row_add:not(:last-of-type) td {

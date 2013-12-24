@@ -159,7 +159,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     private function connect() {
         global $WT_SESSION;
 
-        $url = WT_Filter::getUrl('url', '');
+        $url = WT_Filter::get('url', '');
         // If we’ve clicked login from the login page, we don’t want to go back there.
         if (strpos($url, 'login.php') === 0
             || (strpos($url, 'mod=facebook') !== false

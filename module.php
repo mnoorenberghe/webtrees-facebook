@@ -214,7 +214,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
             $response = @file_get_contents($token_url);
             if ($response === FALSE) {
-                $this->error_page(WT_I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login."));
+                $this->error_page(WT_I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
             $params = null;
             parse_str($response, $params);
@@ -374,6 +374,26 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 set_user_setting($user_id, 'canadmin',          0);
                 set_user_setting($user_id, 'sessiontime',       0);
                 set_user_setting($user_id, 'comment',           @$facebookUser->birthday);
+
+                // Apply pre-approval settings
+                if (isset($preApproved[$facebookUser->username])) {
+                    $userSettings = $preApproved[$facebookUser->username];
+                    foreach ($userSettings as $gedcom => $userGedcomSettings) {
+                        $tree = WT_Tree::get($gedcom);
+                        if (!$tree) {
+                            continue;
+                        }
+                        foreach (array('gedcomid', 'rootid', 'canedit') as $userPref) {
+                            if (empty($userGedcomSettings[$userPref])) {
+                                continue;
+                            }
+                            $tree->userPreference($user_id, $userPref, $userGedcomSettings[$userPref]);
+                        }
+                    }
+                    // Remove the pre-approval record
+                    unset($preApproved[$facebookUser->username]);
+                    set_module_setting($this->getName(), 'preapproved', serialize($preApproved));
+                }
 
                 // We need jQuery below
                 global $controller;

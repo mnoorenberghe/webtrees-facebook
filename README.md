@@ -14,10 +14,10 @@ webtrees Facebook Module
 * handle transition from internal account to FB if using different email address. - Maybe not a big deal if admin is approving since they can merge.
 * ensure there is sufficient logging.
 * allow user comment on account creation
-* Remove users from pre-approved list when they are linked?
 * Test making FB the primary login mechanism by setting the login URL
 * check if bad API keys
 * test with multiple GEDCOMs
 * more validation on pre-approved users
-* respect new pre-approval settings at registration time
 * CSRF protection
+* friend picker for pre-approval and linking
+* relationship gedcom pref

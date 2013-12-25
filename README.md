@@ -8,7 +8,6 @@ webtrees Facebook Module
 ## Installation ##
 1. Install and enable module.
 2. Setup Facebook API App ID and Secret at {WEBTREES_ROOT}/module.php?mod=facebook&mod_action=admin
-3. (Optional) Set {WEBTREES_ROOT}/modules_v3/facebook/login.php as the Login URL in Site configuration.
 
 ## TODO ##
 * handle transition from internal account to FB if using different email address. - Maybe not a big deal if admin is approving since they can merge.

@@ -20,7 +20,7 @@
 /* administration pages */
 
 #admin_content td {
-    vertical-align:middle;
+    vertical-align: middle;
 }
 
 #admin_content button {
@@ -31,10 +31,13 @@
     background-position: -40px -154px;
 }
 
-[class^="icon-"]:hover, [class*=" icon-"]:hover {
-    background-image: inherit;
-    background-image: url(../../themes/_administration/css-1.5.0/images/admin_icon_sprite.png); /* TODO: will break when version number changes */
-    background-color: transparent;
+#admin_content [class^="icon-delete"],
+#admin_content [class*=" icon-delete"] {
+    background: url(icon_delete.png) 50% 50%;
+}
+
+#admin_content [class^="icon-delete"]:hover,
+#admin_content [class*=" icon-delete"]:hover {
     opacity: 0.6;
 }
 

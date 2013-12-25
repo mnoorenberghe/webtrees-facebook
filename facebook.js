@@ -24,7 +24,7 @@ function facebook_getParameterByName(name) {
 }
 
 $(document).ready(function init_facebook() {
-  $("#login-form, #register-form").before(
+    var fbForm = $(
     '<div id="facebook-login-box" style="display: inline-block">' +
     '<form id="login-form" action="module.php?mod=facebook&mod_action=connect" method="post">' +
     '<input type="hidden" name="url" value="" id="facebook_return_url"/>' +
@@ -32,6 +32,8 @@ $(document).ready(function init_facebook() {
     '<button id="facebook-login-button">Login with Facebook</button>' +
     '</form>' +
     '</div>');
-    $("#facebook_connect_csrf").attr('value', WT_CSRF_TOKEN);
-    $("#facebook_return_url").attr('value', facebook_getParameterByName('url'));
+    fbForm.find("#facebook_connect_csrf").attr('value', WT_CSRF_TOKEN);
+    fbForm.find("#facebook_return_url").attr('value', facebook_getParameterByName('url'));
+
+    $("#login-form, #register-form").before(fbForm);
 });

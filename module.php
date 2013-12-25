@@ -27,6 +27,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
     const user_setting_facebook_username = 'facebook_username';
 
+    private $hideStandardForms = false;
+
     // Implement WT_Module_Config
     public function getConfigLink() {
         return 'module.php?mod='.$this->getName().'&amp;mod_action=admin';
@@ -72,6 +74,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             set_module_setting($mod_name, 'app_id', WT_Filter::post('app_id', WT_REGEX_ALPHANUM));
             set_module_setting($mod_name, 'app_secret', WT_Filter::post('app_secret', WT_REGEX_ALPHANUM));
             set_module_setting($mod_name, 'require_verified', WT_Filter::post('require_verified', WT_REGEX_INTEGER, false));
+            set_module_setting($mod_name, 'hide_standard_forms', WT_Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
         } else if (WT_Filter::post('addLink') && WT_Filter::checkCsrf()) {
             $user_id = WT_Filter::post('user_id', WT_REGEX_INTEGER);
             $facebook_username = $this->cleanseFacebookUsername(WT_Filter::post('facebook_username', WT_REGEX_USERNAME));
@@ -152,6 +155,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         $mod_name = $this->getName();
         $app_id = get_module_setting($mod_name, 'app_id');
         $app_secret = get_module_setting($mod_name, 'app_secret');
+        $this->hideStandardForms = get_module_setting($mod_name, 'hide_standard_forms', false);
 
         return !empty($app_id) && !empty($app_secret);
     }
@@ -492,7 +496,8 @@ $(document).ready(function() {
         } else {
          */
           $controller->addInlineJavaScript("
-            $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');",
+            $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');" .
+              ($this->hideStandardForms ? '$(document).ready(function() {$("#login-form[name=\'login-form\']").hide();})' : ""),
             WT_Controller_Page::JS_PRIORITY_LOW);
         //}
 

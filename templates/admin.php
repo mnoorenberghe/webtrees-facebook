@@ -44,6 +44,12 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
       <em>(<?php echo WT_I18N::translate('Only disable for testing'); ?>)</em>
     </label>
   </p>
+  <p>
+    <label>
+      <input type="checkbox" name="hide_standard_forms" value="1"<?php echo (get_module_setting($mod_name, 'hide_standard_forms', 0) ? 'checked="checked" ' : ''); ?> />
+      <?php echo WT_I18N::translate('Hide regular log-in and registration forms'); ?>
+    </label>
+  </p>
   <p><input type="submit" name="saveAPI" value="<?php echo WT_I18N::translate('Save'); ?>"></p>
 </form>
 

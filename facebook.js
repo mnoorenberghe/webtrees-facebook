@@ -26,12 +26,12 @@ function facebook_getParameterByName(name) {
 $(document).ready(function init_facebook() {
   $("#login-form, #register-form").before(
     '<div id="facebook-login-box" style="display: inline-block">' +
-    '<form id="login-form" action="module.php" method="get">' +
-    '<input type="hidden" name="mod" value="facebook"/>' +
-    '<input type="hidden" name="mod_action" value="connect"/>' +
+    '<form id="login-form" action="module.php?mod=facebook&mod_action=connect" method="post">' +
     '<input type="hidden" name="url" value="" id="facebook_return_url"/>' +
+    '<input type="hidden" name="csrf" value="" id="facebook_connect_csrf"/>' +
     '<button id="facebook-login-button">Login with Facebook</button>' +
     '</form>' +
     '</div>');
+    $("#facebook_connect_csrf").attr('value', WT_CSRF_TOKEN);
     $("#facebook_return_url").attr('value', facebook_getParameterByName('url'));
 });

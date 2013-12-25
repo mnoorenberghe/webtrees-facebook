@@ -57,16 +57,10 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     }
 
     private function admin() {
-        $controller = new WT_Controller_Page();
-        $controller
-            ->requireAdminLogin()
-            ->setPageTitle($this->getTitle())
-            ->pageHeader();
-
         $mod_name = $this->getName();
         $preApproved = unserialize(get_module_setting($mod_name, 'preapproved'));
 
-        $ALL_EDIT_OPTIONS=array( // from admin_users.php
+        $ALL_EDIT_OPTIONS = array( // from admin_users.php
           'none'  => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Visitor'),
           'access'=> /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Member'),
           'edit'  => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Editor'),
@@ -74,22 +68,22 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
           'admin' => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Manager')
         );
 
-        if (WT_Filter::post('saveAPI')) {
+        if (WT_Filter::post('saveAPI') && WT_Filter::checkCsrf()) {
             set_module_setting($mod_name, 'app_id', WT_Filter::post('app_id', WT_REGEX_ALPHANUM));
             set_module_setting($mod_name, 'app_secret', WT_Filter::post('app_secret', WT_REGEX_ALPHANUM));
             set_module_setting($mod_name, 'require_verified', WT_Filter::post('require_verified', WT_REGEX_INTEGER, false));
-        } else if (WT_Filter::post('addLink')) {
+        } else if (WT_Filter::post('addLink') && WT_Filter::checkCsrf()) {
             $user_id = WT_Filter::post('user_id', WT_REGEX_INTEGER);
             $facebook_username = $this->cleanseFacebookUsername(WT_Filter::post('facebook_username', WT_REGEX_USERNAME));
             if ($user_id && $facebook_username && !$this->get_user_id_from_facebook_username($facebook_username)) {
                 set_user_setting($user_id, self::user_setting_facebook_username, $facebook_username);
             }
-        } else if (WT_Filter::post('deleteLink')) {
+        } else if (WT_Filter::post('deleteLink') && WT_Filter::checkCsrf()) {
             $user_id = WT_Filter::post('deleteLink', WT_REGEX_INTEGER);
             if ($user_id) {
                 set_user_setting($user_id, self::user_setting_facebook_username, NULL);
             }
-        } else if (WT_Filter::post('addPreapproved')) {
+        } else if (WT_Filter::post('addPreapproved') && WT_Filter::checkCsrf()) {
             $table = WT_Filter::post('preApproved');
             $row = $table['new'];
             $facebook_username = WT_Filter::post('preApproved_new_facebook_username', WT_REGEX_USERNAME);
@@ -98,7 +92,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $this->appendPreapproved($preApproved, $facebook_username, $row);
             //var_dump($preApproved);
             set_module_setting($mod_name, 'preapproved', serialize($preApproved));
-        } else if (WT_Filter::post('savePreapproved')) {
+        } else if (WT_Filter::post('savePreapproved') && WT_Filter::checkCsrf()) {
             $table = WT_Filter::post('preApproved');
             unset($table['new']);
             foreach($table as $facebook_username => $row) {
@@ -106,13 +100,19 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             }
             //var_dump($preApproved);
             set_module_setting($mod_name, 'preapproved', serialize($preApproved));
-        } else if (WT_Filter::post('deletePreapproved')) {
+        } else if (WT_Filter::post('deletePreapproved') && WT_Filter::checkCsrf()) {
             $facebook_username = trim(WT_Filter::post('deletePreapproved', WT_REGEX_USERNAME));
             if ($facebook_username) {
                 unset($preApproved[$facebook_username]);
                 set_module_setting($mod_name, 'preapproved', serialize($preApproved));
             }
         }
+
+        $controller = new WT_Controller_Page();
+        $controller
+            ->requireAdminLogin()
+            ->setPageTitle($this->getTitle())
+            ->pageHeader();
 
         $linkedUsers = array();
         $users = $this->get_users_with_module_settings();
@@ -159,7 +159,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     private function connect() {
         global $WT_SESSION;
 
-        $url = WT_Filter::get('url', '');
+        $url = WT_Filter::post('url', NULL, WT_Filter::get('url', NULL, ''));
         // If we’ve clicked login from the login page, we don’t want to go back there.
         if (strpos($url, 'login.php') === 0
             || (strpos($url, 'mod=facebook') !== false
@@ -191,7 +191,11 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             } else {
                 $this->error_page(WT_I18N::translate('An error occurred trying to log you in with Facebook.'));
             }
-        } else if(empty($code) && empty($WT_SESSION->facebook_access_token)) {
+        } else if (empty($code) && empty($WT_SESSION->facebook_access_token)) {
+            if (!WT_Filter::checkCsrf()) {
+                echo WT_I18N::translate('This form has expired.  Try again.');
+                return;
+            }
             // FB Login flow has not begun so redirect to login dialog.
             $WT_SESSION->facebook_state = md5(uniqid(rand(), TRUE)); // CSRF protection
             $dialog_url = "https://www.facebook.com/dialog/oauth?client_id="
@@ -407,6 +411,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 echo $this->hidden_input("user_name", $username);
                 echo $this->hidden_input("user_password", $password);
                 echo $this->hidden_input("user_hashcode", $hashcode);
+                echo WT_Filter::getCsrf();
                 echo '</form>';
 
                 if ($verifiedByAdmin) {
@@ -421,7 +426,7 @@ function verify_hash_success() {
 
 function verify_hash_failure() {
   alert("' . WT_I18N::translate("There was an error verifying your account. Contact the site administrator if you are unable to access the site.")  . '");
-  window.top.location = "' . WT_SCRIPT_PATH . $url . '";
+  window.top.location = "' . WT_SCRIPT_PATH . '";
 }
 $(document).ready(function() {
   console.log("before post");

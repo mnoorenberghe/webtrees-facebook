@@ -75,16 +75,19 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             set_module_setting($mod_name, 'app_secret', WT_Filter::post('app_secret', WT_REGEX_ALPHANUM));
             set_module_setting($mod_name, 'require_verified', WT_Filter::post('require_verified', WT_REGEX_INTEGER, false));
             set_module_setting($mod_name, 'hide_standard_forms', WT_Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
+            WT_FlashMessages::addMessage(WT_I18N::translate('Settings saved'));
         } else if (WT_Filter::post('addLink') && WT_Filter::checkCsrf()) {
             $user_id = WT_Filter::post('user_id', WT_REGEX_INTEGER);
             $facebook_username = $this->cleanseFacebookUsername(WT_Filter::post('facebook_username', WT_REGEX_USERNAME));
             if ($user_id && $facebook_username && !$this->get_user_id_from_facebook_username($facebook_username)) {
                 set_user_setting($user_id, self::user_setting_facebook_username, $facebook_username);
+                WT_FlashMessages::addMessage(WT_I18N::translate('User linked'));
             }
         } else if (WT_Filter::post('deleteLink') && WT_Filter::checkCsrf()) {
             $user_id = WT_Filter::post('deleteLink', WT_REGEX_INTEGER);
             if ($user_id) {
                 set_user_setting($user_id, self::user_setting_facebook_username, NULL);
+                WT_FlashMessages::addMessage(WT_I18N::translate('User unlinked'));
             }
         } else if (WT_Filter::post('addPreapproved') && WT_Filter::checkCsrf()) {
             $table = WT_Filter::post('preApproved');
@@ -95,6 +98,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $this->appendPreapproved($preApproved, $facebook_username, $row);
             //var_dump($preApproved);
             set_module_setting($mod_name, 'preapproved', serialize($preApproved));
+            WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user added'));
         } else if (WT_Filter::post('savePreapproved') && WT_Filter::checkCsrf()) {
             $table = WT_Filter::post('preApproved');
             unset($table['new']);
@@ -103,11 +107,13 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             }
             //var_dump($preApproved);
             set_module_setting($mod_name, 'preapproved', serialize($preApproved));
+            WT_FlashMessages::addMessage(WT_I18N::translate('Changes to pre-approved users saved'));
         } else if (WT_Filter::post('deletePreapproved') && WT_Filter::checkCsrf()) {
             $facebook_username = trim(WT_Filter::post('deletePreapproved', WT_REGEX_USERNAME));
             if ($facebook_username) {
                 unset($preApproved[$facebook_username]);
                 set_module_setting($mod_name, 'preapproved', serialize($preApproved));
+                WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user deleted'));
             }
         }
 
@@ -135,8 +141,12 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
     private function appendPreapproved(&$preApproved, $facebook_username, $row) {
         $facebook_username = $this->cleanseFacebookUsername($facebook_username);
-        if (!$facebook_username || $this->get_user_id_from_facebook_username($facebook_username)) {
-            echo '<div class="warning">' . WT_I18N::translate('User is already registered') . '</div>';
+        if (!$facebook_username) {
+            WT_FlashMessages::addMessage(WT_I18N::translate('Missing Facebook username'));
+            return;
+        }
+        if ($this->get_user_id_from_facebook_username($facebook_username)) {
+            WT_FlashMessages::addMessage(WT_I18N::translate('User is already registered'));
             return;
         }
 
@@ -459,7 +469,12 @@ $(document).ready(function() {
         $controller
             ->setPageTitle($this->getTitle())
             ->pageHeader();
-        echo '<div class="warning">'.$message.'</div>';
+
+        try {
+            WT_FlashMessages::addMessage($message);
+        } catch (Zend_Session_Exception $zse) {
+            echo '<div class="warning">'.$message.'</div>';
+        }
         exit;
     }
 

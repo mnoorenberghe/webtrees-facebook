@@ -101,9 +101,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $row = $table['new'];
             $facebook_username = WT_Filter::post('preApproved_new_facebook_username', WT_REGEX_USERNAME);
             unset($row['facebook_username']);
-            //var_dump($row);exit;
             $this->appendPreapproved($preApproved, $facebook_username, $row);
-            //var_dump($preApproved);
             set_module_setting($mod_name, 'preapproved', serialize($preApproved));
             AddToLog("Facebook: Pre-approved Facebook user: $facebook_username", 'config');
             WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user added'));
@@ -113,7 +111,6 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             foreach($table as $facebook_username => $row) {
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
             }
-            //var_dump($preApproved);
             set_module_setting($mod_name, 'preapproved', serialize($preApproved));
             AddToLog("Facebook: Pre-approved Facebook users changed", 'config');
             WT_FlashMessages::addMessage(WT_I18N::translate('Changes to pre-approved users saved'));
@@ -164,7 +161,6 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
         $preApproved[$facebook_username] = array();
         foreach ($row as $gedcom => $settings) {
-            // TODO: check valid gedcom and possibly xref
             $preApproved[$facebook_username][$gedcom] = array(
                                                               'rootid' => filter_var($settings['rootid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' .  WT_REGEX_XREF . ')$/u'))),
                                                               'gedcomid' => filter_var($settings['gedcomid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_XREF . ')$/u'))),
@@ -332,9 +328,9 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
     /**
      * If the Facebook username or email is associated with an account, login to it. Otherwise, register a new account.
-     * TODO: handle transition from internal account to FB if using different email address.
      *
      * @param string $facebookUser Facebook username
+     * @param string $url          (optional) URL to redirect to afterwards.
      */
     private function login_or_register(&$facebookUser, $url='') {
 	global $WT_SESSION;
@@ -351,7 +347,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         if (!$user_id) {
             $user_id = get_user_by_email($facebookUser->email);
         }
-        //var_dump($user_id);
+
         if ($user_id) { // This is an existing user so log them in if they are approved
 
             $login_result = $this->login($user_id);
@@ -445,7 +441,6 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                     $controller->addInlineJavaScript('
 function verify_hash_success() {
   // now the account is approved but not logged in. Now actually login for the user.
-  // TODO: investigate if this could cause a loop.
   if (!parseInt(WT_USER_ID, 10)) {
     window.top.location = "' . $this->getConnectURL($url) . '";
   }
@@ -456,7 +451,6 @@ function verify_hash_failure() {
   window.top.location = "' . WT_SCRIPT_PATH . '";
 }
 $(document).ready(function() {
-  console.log("before post");
   $.post("' . WT_LOGIN_URL . '", $("#verify-form").serialize(), verify_hash_success).fail(verify_hash_failure);
 });
 ');

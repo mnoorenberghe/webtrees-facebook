@@ -82,12 +82,16 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             if ($user_id && $facebook_username && !$this->get_user_id_from_facebook_username($facebook_username)) {
                 set_user_setting($user_id, self::user_setting_facebook_username, $facebook_username);
                 WT_FlashMessages::addMessage(WT_I18N::translate('User linked'));
+            } else {
+                WT_FlashMessages::addMessage(WT_I18N::translate('The user could not be linked'));
             }
         } else if (WT_Filter::post('deleteLink') && WT_Filter::checkCsrf()) {
             $user_id = WT_Filter::post('deleteLink', WT_REGEX_INTEGER);
             if ($user_id) {
                 set_user_setting($user_id, self::user_setting_facebook_username, NULL);
                 WT_FlashMessages::addMessage(WT_I18N::translate('User unlinked'));
+            } else {
+                WT_FlashMessages::addMessage(WT_I18N::translate('The link could not be deleted'));
             }
         } else if (WT_Filter::post('addPreapproved') && WT_Filter::checkCsrf()) {
             $table = WT_Filter::post('preApproved');
@@ -114,6 +118,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 unset($preApproved[$facebook_username]);
                 set_module_setting($mod_name, 'preapproved', serialize($preApproved));
                 WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user deleted'));
+            } else {
+                WT_FlashMessages::addMessage(WT_I18N::translate('The pre-approved user could not be deleted'));
             }
         }
 

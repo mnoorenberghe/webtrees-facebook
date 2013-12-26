@@ -76,14 +76,14 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
       <td><a href="admin_users.php?filter='.$user->user_name.'">'.$user->user_name.'</a></td>
       <td><a href="admin_users.php?filter='.$user->user_name.'">'.$user->real_name.'</a></td>
       <td><a href="https://www.facebook.com/'.$user->facebook_username.'">'.$user->facebook_username.'</a></td>
-      <td><button name="deleteLink" value="'.$user_id.'" class="icon-delete" style="border:none;"></button></td>
+      <td><button name="deleteLink" value="'.$user_id.'" class="icon-delete" formnovalidate="formnovalidate" style="border:none;"></button></td>
     </tr>';
         }
       }
     ?>
     <tr>
       <td colspan="2"><select name="user_id"><?php echo $unlinkedOptions; ?></select></td>
-      <td><input type="text" name="facebook_username" <?php echo $usernameValidationAttrs; ?> /></td>
+      <td><input type="text" name="facebook_username" required="required" <?php echo $usernameValidationAttrs; ?> /></td>
       <td><input type="submit" name="addLink" value="<?php echo WT_I18N::translate('Add'); ?>"></td>
     </tr>
   </tbody>

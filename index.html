@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="webtrees-Facebook : Facebook integration for webtrees genealogy software" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>webtrees-Facebook</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/mnoorenberghe/webtrees-facebook">View on GitHub</a>
+
+          <h1 id="project_title">webtrees-Facebook</h1>
+          <h2 id="project_tagline">Facebook integration for webtrees genealogy software</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/mnoorenberghe/webtrees-facebook/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/mnoorenberghe/webtrees-facebook/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="webtrees-facebook-module" class="anchor" href="#webtrees-facebook-module"><span class="octicon octicon-link"></span></a>webtrees Facebook Module</h1>
+
+<p>Facebook integration for webtrees genealogy software.</p>
+
+<ul>
+<li>webtrees 1.5.0 or higher is required.</li>
+<li>'Allow visitors to request account registration' must be enabled in Site Configuration if you want
+to allow new users via Facebook.</li>
+</ul><h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<ol>
+<li>Install the module by extracting/cloning the directory with the name <code>facebook</code> inside <code>/modules_v3/</code>.</li>
+<li>In the 'administration' section of your webtrees site, visit the 'Modules' page and check the box to
+enable the 'Facebook' module and then click 'Save'.</li>
+<li>If you don't already have a Facebook application setup for the site, visit
+<a href="https://developers.facebook.com/apps">https://developers.facebook.com/apps</a> and set one up by clicking 'Create New App' and specifying an
+App Name. Once the App is created, indicate that you want to integrate with Facebook as a 'Website
+with Facebook Login' and provide the URL to your webtrees site.</li>
+<li>Specify the Facebook API App ID and Secret at <code>{WEBTREES_ROOT}/module.php?mod=facebook&amp;mod_action=admin</code>
+which is accessible as a 'Facebook' link from the bottom of the administration menu.</li>
+</ol><h2>
+<a name="known-issues" class="anchor" href="#known-issues"><span class="octicon octicon-link"></span></a>Known Issues</h2>
+
+<ul>
+<li>If a user logs in with a Facebook account which uses a different email address than their existing
+webtrees email address, a second account will be created for the same individual. If administrator
+approval is required for new accounts, the administrator can delete the new account and link the
+existing account to the user's Facebook account. The administrator can also link existing users to
+their Facebook accounts in advance (where possible) to avoid this situation.</li>
+<li>There is no comment field during registration with a Facebook account.</li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">webtrees-Facebook maintained by <a href="https://github.com/mnoorenberghe">mnoorenberghe</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>

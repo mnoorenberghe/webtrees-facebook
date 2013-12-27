@@ -21,7 +21,7 @@ if (!defined('WT_WEBTREES')) {
     exit;
 }
 
-define('WT_FACEBOOK_VERSION', 0.9);
+define('WT_FACEBOOK_VERSION', "v1.0-beta.1");
 
 class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Module_Menu {
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
@@ -497,7 +497,9 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 set_user_setting($user_id, 'auto_accept',       0);
                 set_user_setting($user_id, 'canadmin',          0);
                 set_user_setting($user_id, 'sessiontime',       0);
-                set_user_setting($user_id, 'comment',           @$facebookUser->birthday);
+                set_user_setting($user_id, 'comment',
+                                 @$facebookUser->birthday . "\n " .
+                                 "https://www.facebook.com/" . $this->cleanseFacebookUsername($facebookUser->username));
 
                 // Apply pre-approval settings
                 if (isset($preApproved[$facebookUser->username])) {

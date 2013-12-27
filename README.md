@@ -3,6 +3,8 @@ webtrees Facebook Module
 
 Facebook integration for webtrees genealogy software.
 
+All of the authentication is done on the server-side so no external JavaScript files are needed.
+
 * webtrees 1.5.0 or higher is required.
 * 'Allow visitors to request account registration' must be enabled in Site Configuration if you want
   to allow new users via Facebook.

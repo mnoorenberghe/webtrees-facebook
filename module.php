@@ -234,7 +234,21 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             // User has already authorized the app and we have a token so get their info.
             $graph_url = "https://graph.facebook.com/me?access_token="
                 . $WT_SESSION->facebook_access_token;
-            $user = json_decode(file_get_contents($graph_url));
+            $response = file_get_contents($graph_url);
+            if ($response === FALSE) {
+                AddToLog("Facebook: Access token is no longer valid", 'error');
+                // Clear the state and try again with a new token.
+                try {
+                    unset($WT_SESSION->facebook_access_token);
+                    unset($WT_SESSION->facebook_state);
+                    Zend_Session::writeClose();
+                } catch (Exception $e) { }
+
+                header("Location: " . $this->getConnectURL($url));
+                exit;
+            }
+
+            $user = json_decode($response);
             $this->login_or_register($user, $url);
         } else if (!empty($WT_SESSION->facebook_state) && ($WT_SESSION->facebook_state === $_REQUEST['state'])) {
             // User has already been redirected to login dialog.
@@ -556,9 +570,7 @@ $(document).ready(function() {
             unset($WT_SESSION->facebook_access_token);
             unset($WT_SESSION->facebook_state);
             Zend_Session::writeClose();
-        } catch (Exception $e) {
-
-        }
+        } catch (Exception $e) { }
 
         $controller = new WT_Controller_Page();
         $controller

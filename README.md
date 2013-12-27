@@ -24,3 +24,4 @@ Facebook integration for webtrees genealogy software.
   approval is required for new accounts, the administrator can delete the new account and link the
   existing account to the user's Facebook account. The administrator can also link existing users to
   their Facebook accounts in advance (where possible) to avoid this situation.
+* There is no comment field during registration with a Facebook account.

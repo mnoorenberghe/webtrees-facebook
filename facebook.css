@@ -66,6 +66,10 @@
     padding-right: 3px;
 }
 
+#admin_content #facebook_friend_list label {
+    display: block;
+}
+
 /* login and registration pages */
 
 #login-form,

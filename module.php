@@ -53,22 +53,27 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 	    case 'connect':
                 $this->connect();
                 break;
+            case 'admin_friend_picker':
+                $this->fetchFriendList();
+                break;
 	    default:
                 header('HTTP/1.0 404 Not Found');
         }
     }
 
+    private function get_edit_options() {
+        return array( // from admin_users.php
+                     'none'  => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Visitor'),
+                     'access'=> /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Member'),
+                     'edit'  => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Editor'),
+                     'accept'=> /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Moderator'),
+                     'admin' => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Manager')
+                      );
+    }
+
     private function admin() {
         $mod_name = $this->getName();
         $preApproved = unserialize(get_module_setting($mod_name, 'preapproved'));
-
-        $ALL_EDIT_OPTIONS = array( // from admin_users.php
-          'none'  => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Visitor'),
-          'access'=> /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Member'),
-          'edit'  => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Editor'),
-          'accept'=> /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Moderator'),
-          'admin' => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Manager')
-        );
 
         if (WT_Filter::post('saveAPI') && WT_Filter::checkCsrf()) {
             set_module_setting($mod_name, 'app_id', WT_Filter::post('app_id', WT_REGEX_ALPHANUM));
@@ -162,8 +167,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         $preApproved[$facebook_username] = array();
         foreach ($row as $gedcom => $settings) {
             $preApproved[$facebook_username][$gedcom] = array(
-                                                              'rootid' => filter_var($settings['rootid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' .  WT_REGEX_XREF . ')$/u'))),
-                                                              'gedcomid' => filter_var($settings['gedcomid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_XREF . ')$/u'))),
+                                                              'rootid' => filter_var(@$settings['rootid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' .  WT_REGEX_XREF . ')$/u'))),
+                                                              'gedcomid' => filter_var(@$settings['gedcomid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_XREF . ')$/u'))),
                                                               'canedit' => filter_var($settings['canedit'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_ALPHA . ')$/u')))
             );
         }
@@ -299,6 +304,84 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     private function getConnectURL($returnTo='') {
         return WT_SERVER_NAME . WT_SCRIPT_PATH . "module.php?mod=" . $this->getName()
             . "&mod_action=connect" . ($returnTo ? "&url=" . urlencode($returnTo) : ""); // Workaround FB bug where "&url=" (empty value) prevents OAuth
+    }
+
+    private function fetchFriendList() {
+        global $WT_SESSION, $controller;
+
+        $controller = new WT_Controller_Page();
+
+        $controller->addInlineJavaScript("
+            $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');",
+                                         WT_Controller_Page::JS_PRIORITY_LOW);
+
+        $preApproved = unserialize(get_module_setting($this->getName(), 'preapproved'));
+
+        if (WT_Filter::postArray('preApproved') && WT_Filter::checkCsrf()) {
+            $roleRows = WT_Filter::postArray('preApproved');
+            $fbUsernames = WT_Filter::postArray('facebook_username', WT_REGEX_USERNAME);
+            foreach($fbUsernames as $facebook_username) {
+                $facebook_username = $this->cleanseFacebookUsername($facebook_username);
+                $this->appendPreapproved($preApproved, $facebook_username, $roleRows);
+            }
+            set_module_setting($this->getName(), 'preapproved', serialize($preApproved));
+            WT_FlashMessages::addMessage(WT_I18N::translate('Users successfully imported from Facebook'));
+            header("Location: module.php?mod=" . $this->getName() . "&mod_action=admin");
+            exit;
+        }
+
+        if (empty($WT_SESSION->facebook_access_token)) {
+            $this->error_page(WT_I18N::translate("You must <a href='%s'>login to the site via Facebook</a> in order to import friends from Facebook", "index.php?logout=1"));
+        }
+        $graph_url = "https://graph.facebook.com/me/friends?fields=first_name,last_name,name,username&access_token="
+            . $WT_SESSION->facebook_access_token;
+        $friendsResponse = @file_get_contents($graph_url);
+        if ($friendsResponse === FALSE) {
+            $this->error_page(WT_I18N::translate("Could not fetch your friends from Facebook."));
+        }
+
+        $controller
+            ->requireAdminLogin()
+            ->setPageTitle($this->getTitle())
+            ->pageHeader();
+
+        $friends = json_decode($friendsResponse);
+        if (empty($friends->data)) {
+            $this->error_page(WT_I18N::translate("No friend data"));
+            return;
+        }
+
+        function nameSort($a, $b) {
+            return strcmp($a->last_name . " " . $a->first_name, $b->last_name . " " . $b->first_name);
+        }
+
+        usort($friends->data, "nameSort");
+        echo "<form id='facebook_friend_list' method='post' action=''>";
+        require_once WT_ROOT.'includes/functions/functions_edit.php'; // for select_edit_control
+        $index = 0;
+        foreach (WT_Tree::getAll() as $tree) {
+            $class = ($index++ % 2 ? 'odd' : 'even');
+            echo "<label>" . $tree->tree_name_html . " - " .
+                WT_I18N::translate('Role') . help_link('role') . ": " .
+                select_edit_control('preApproved['.$tree->tree_id.'][canedit]',
+                                    $this->get_edit_options(), NULL, NULL) .
+                "</label>";
+      }
+
+        foreach ($friends->data as $friend) {
+            $facebook_username = $this->cleanseFacebookUsername(isset($friend->username) ? $friend->username : $friend->id);
+
+            // Exclude friends who are already pre-approved or are current users
+            if (isset($preApproved[$facebook_username])
+                || $this->get_user_id_from_facebook_username($facebook_username)) {
+                continue;
+            }
+            echo "<label><input name='facebook_username[]' type='checkbox' value='" .
+                $facebook_username . "'/>" .
+                $friend->name . "</label>";
+        }
+        echo WT_Filter::getCsrf();
+        echo "<button>Select Friends</button></form>";
     }
 
     private function login($user_id) {
@@ -469,9 +552,13 @@ $(document).ready(function() {
     private function error_page($message) {
         global $controller, $WT_SESSION;
 
-        unset($WT_SESSION->facebook_access_token);
-        unset($WT_SESSION->facebook_state);
-        Zend_Session::writeClose();
+        try {
+            unset($WT_SESSION->facebook_access_token);
+            unset($WT_SESSION->facebook_state);
+            Zend_Session::writeClose();
+        } catch (Exception $e) {
+
+        }
 
         $controller = new WT_Controller_Page();
         $controller

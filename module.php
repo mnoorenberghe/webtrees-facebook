@@ -21,7 +21,7 @@ if (!defined('WT_WEBTREES')) {
     exit;
 }
 
-define('WT_FACEBOOK_VERSION', 0.1);
+define('WT_FACEBOOK_VERSION', 0.9);
 
 class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Module_Menu {
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';

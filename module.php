@@ -607,7 +607,7 @@ $(document).ready(function() {
          */
           $controller->addInlineJavaScript("
             $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');" .
-              ($this->hideStandardForms ? '$(document).ready(function() {$("#login-form[name=\'login-form\']").hide();})' : ""),
+              ($this->hideStandardForms ? '$(document).ready(function() {$("#login-form[name=\'login-form\'], #register-form").hide();})' : ""),
             WT_Controller_Page::JS_PRIORITY_LOW);
         //}
 

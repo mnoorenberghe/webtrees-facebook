@@ -103,7 +103,7 @@ their Facebook accounts in advance (where possible) to avoid this situation.</li
                        || evt.ctrlKey || evt.button !== 0) {
                      return;
                    }
-                   _gaq.push(['_trackEvent', 'Outbound Links', evt.target.href]);
+                   pageTracker._trackEvent('Outbound Links', evt.target.href);
                    setTimeout(function() {
                      document.location.href = evt.target.href;
                    }, 100);

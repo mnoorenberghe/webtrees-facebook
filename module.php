@@ -26,6 +26,7 @@ define('WT_FACEBOOK_VERSION', "v1.0-beta.1");
 class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Module_Menu {
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
     const user_setting_facebook_username = 'facebook_username';
+    const profile_photo_large_width = 1024;
 
     private $hideStandardForms = false;
 
@@ -607,7 +608,7 @@ $(document).ready(function() {
     public function getMenu() {
         // We don't actually have a menu - this is just a convenient "hook" to execute
         // code at the right time during page execution
-        global $controller;
+        global $controller, $THUMBNAIL_WIDTH;
 
         if (!$this->isSetup()) {
             return null;
@@ -624,6 +625,21 @@ $(document).ready(function() {
               ($this->hideStandardForms ? '$(document).ready(function() {$("#login-form[name=\'login-form\'], #register-form").hide();})' : ""),
             WT_Controller_Page::JS_PRIORITY_LOW);
         //}
+
+          // Use the Facebook profile photo if there isn't an existing photo
+          if (!empty($controller->record) && !$controller->record->findHighlightedMedia()
+              && $user_id = get_user_from_gedcom_xref(WT_GED_ID, $controller->record->getXref())) {
+              if ($fbUsername = get_user_setting($user_id, self::user_setting_facebook_username)) {
+                  $fbPicture = 'https://graph.facebook.com/'.$fbUsername.'/picture';
+                  $controller->addInlineJavaScript('$(document).ready(function() {' .
+                      '$("#indi_mainimage").html("<a class=\"gallery\" href=\"'.$fbPicture.'?width=' .
+                      self::profile_photo_large_width.'\" data-obje-url=\"'.$fbPicture.'?type=large\">' .
+                      '<img width=\"'.$THUMBNAIL_WIDTH.'\" src=\"'.$fbPicture.'?width='.$THUMBNAIL_WIDTH.'\"/>' .
+                      '</a>");' .
+                 '})');
+              }
+          }
+
 
         return null;
     }

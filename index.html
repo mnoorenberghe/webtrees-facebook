@@ -95,6 +95,22 @@ their Facebook accounts in advance (where possible) to avoid this situation.</li
               var pageTracker = _gat._getTracker("UA-373151-10");
             pageTracker._trackPageview();
             } catch(err) {}
+            try {
+              if (document.addEventListener) {
+                document.addEventListener("click", function clickHandler(evt) {
+                   if (evt.target.localName != "a" || !evt.target.href || !evt.target.host
+                       || evt.target.host == "mnoorenberghe.github.io" || evt.metaKey
+                       || evt.ctrlKey || evt.button !== 0) {
+                     return;
+                   }
+                   _gaq.push(['_trackEvent', 'Outbound Links', evt.target.href]);
+                   setTimeout(function() {
+                     document.location.href = evt.target.href;
+                   }, 100);
+                   evt.preventDefault();
+                });
+              }
+            } catch(err) {}
           </script>
 
 

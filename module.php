@@ -88,8 +88,13 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $facebook_username = $this->cleanseFacebookUsername(WT_Filter::post('facebook_username', WT_REGEX_USERNAME));
             if ($user_id && $facebook_username && !$this->get_user_id_from_facebook_username($facebook_username)) {
                 set_user_setting($user_id, self::user_setting_facebook_username, $facebook_username);
+                if (isset($preApproved[$facebook_username])) {
+                    // Delete a pre-approval for the Facebook username.
+                    unset($preApproved[$facebook_username]);
+                    set_module_setting($mod_name, 'preapproved', serialize($preApproved));
+                }
                 AddToLog("Facebook: User $user_id linked to Facebook user $facebook_username", 'config');
-                WT_FlashMessages::addMessage(WT_I18N::translate('User linked'));
+                WT_FlashMessages::addMessage(WT_I18N::translate('User %1$s linked to Facebook user %2$s', $user_id, $facebook_username));
             } else {
                 WT_FlashMessages::addMessage(WT_I18N::translate('The user could not be linked'));
             }
@@ -102,18 +107,18 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             } else {
                 WT_FlashMessages::addMessage(WT_I18N::translate('The link could not be deleted'));
             }
-        } else if (WT_Filter::post('addPreapproved') && WT_Filter::checkCsrf()) {
-            $table = WT_Filter::post('preApproved');
-            $row = $table['new'];
-            $facebook_username = WT_Filter::post('preApproved_new_facebook_username', WT_REGEX_USERNAME);
-            unset($row['facebook_username']);
-            $this->appendPreapproved($preApproved, $facebook_username, $row);
-            set_module_setting($mod_name, 'preapproved', serialize($preApproved));
-            AddToLog("Facebook: Pre-approved Facebook user: $facebook_username", 'config');
-            WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user added'));
         } else if (WT_Filter::post('savePreapproved') && WT_Filter::checkCsrf()) {
             $table = WT_Filter::post('preApproved');
+            if ($facebook_username = $this->cleanseFacebookUsername(WT_Filter::post('preApproved_new_facebook_username', WT_REGEX_USERNAME))) {
+                // Process additions
+                $row = $table['new'];
+                $this->appendPreapproved($preApproved, $facebook_username, $row);
+                set_module_setting($mod_name, 'preapproved', serialize($preApproved));
+                AddToLog("Facebook: Pre-approved Facebook user: $facebook_username", 'config');
+                WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user "%s" added', $facebook_username));
+            }
             unset($table['new']);
+            // Process changes
             foreach($table as $facebook_username => $row) {
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
             }
@@ -122,13 +127,13 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             WT_FlashMessages::addMessage(WT_I18N::translate('Changes to pre-approved users saved'));
         } else if (WT_Filter::post('deletePreapproved') && WT_Filter::checkCsrf()) {
             $facebook_username = trim(WT_Filter::post('deletePreapproved', WT_REGEX_USERNAME));
-            if ($facebook_username) {
+            if ($facebook_username && isset($preApproved[$facebook_username])) {
                 unset($preApproved[$facebook_username]);
                 set_module_setting($mod_name, 'preapproved', serialize($preApproved));
                 AddToLog("Facebook: Pre-approved Facebook user deleted: $facebook_username", 'config');
-                WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user deleted'));
+                WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user "%s" deleted', $facebook_username));
             } else {
-                WT_FlashMessages::addMessage(WT_I18N::translate('The pre-approved user could not be deleted'));
+                WT_FlashMessages::addMessage(WT_I18N::translate('The pre-approved user "%s" could not be deleted', $facebook_username));
             }
         }
 
@@ -589,8 +594,8 @@ $(document).ready(function() {
     }
 
     private function print_findindi_link($element_id, $indiname='', $gedcomTitle=WT_GEDURL) {
-	return '<a href="#" tabindex="-1"\
-                   onclick="findIndi(document.getElementById(\''.$element_id.'\'), document.getElementById(\''.$indiname.'\'), \''.$gedcomTitle.'\'); return false;"\
+	return '<a href="#" tabindex="-1"
+                   onclick="findIndi(document.getElementById(\''.$element_id.'\'), document.getElementById(\''.$indiname.'\'), \''.$gedcomTitle.'\'); return false;"
                    class="icon-button_indi" title="'.WT_I18N::translate('Find an individual').'"></a>';
     }
 

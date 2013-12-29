@@ -99,6 +99,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
   <p><a href="?mod=facebook&mod_action=admin_friend_picker">
       <?php echo WT_I18N::translate("Import from your Facebook friends"); ?>
   </a></p>
+<p><input type="submit" name="savePreapproved" value="<?php echo WT_I18N::translate('Save'); ?>"></p>
 <table id="preapproved">
   <thead>
     <tr>
@@ -139,7 +140,6 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
                               $this->get_edit_options(), NULL, NULL), '</td>';
         }
       ?>
-      <td><input type="submit" name="addPreapproved" value="<?php echo WT_I18N::translate('Add'); ?>"></td>
     </tr>
     <?php
       if (!empty($preApproved)) {
@@ -167,7 +167,6 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
     ?>
   </tbody>
 </table>
-<p><input type="submit" name="savePreapproved" value="<?php echo WT_I18N::translate('Save'); ?>"></p>
 </form>
 <script>
 function paste_id(value) {

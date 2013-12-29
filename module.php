@@ -589,7 +589,9 @@ $(document).ready(function() {
     }
 
     private function print_findindi_link($element_id, $indiname='', $gedcomTitle=WT_GEDURL) {
-	return '<a href="#" onclick="findIndi(document.getElementById(\''.$element_id.'\'), document.getElementById(\''.$indiname.'\'), \''.$gedcomTitle.'\'); return false;" class="icon-button_indi" title="'.WT_I18N::translate('Find an individual').'"></a>';
+	return '<a href="#" tabindex="-1"\
+                   onclick="findIndi(document.getElementById(\''.$element_id.'\'), document.getElementById(\''.$indiname.'\'), \''.$gedcomTitle.'\'); return false;"\
+                   class="icon-button_indi" title="'.WT_I18N::translate('Find an individual').'"></a>';
     }
 
     private function indiField($field, $value='', $gedcomTitle=WT_GEDURL) {

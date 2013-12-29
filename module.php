@@ -436,7 +436,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     /**
      * If the Facebook username or email is associated with an account, login to it. Otherwise, register a new account.
      *
-     * @param string $facebookUser Facebook username
+     * @param object $facebookUser Facebook user
      * @param string $url          (optional) URL to redirect to afterwards.
      */
     private function login_or_register(&$facebookUser, $url='') {
@@ -495,7 +495,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             AddToLog('User registration requested for: ' . $username, 'auth');
             if ($user_id = create_user($username, $facebookUser->name, $facebookUser->email, $password)) {
                 $verifiedByAdmin = !$REQUIRE_ADMIN_AUTH_REGISTRATION || isset($preApproved[$username]);
-                set_user_setting($user_id, self::user_setting_facebook_username, $username);
+                set_user_setting($user_id, self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username));
                 set_user_setting($user_id, 'language',          WT_LOCALE);
                 set_user_setting($user_id, 'verified',          1);
                 set_user_setting($user_id, 'verified_by_admin', $verifiedByAdmin);
@@ -509,7 +509,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 set_user_setting($user_id, 'sessiontime',       0);
                 set_user_setting($user_id, 'comment',
                                  @$facebookUser->birthday . "\n " .
-                                 "https://www.facebook.com/" . $username);
+                                 "https://www.facebook.com/" . $this->cleanseFacebookUsername($facebookUser->username));
 
                 // Apply pre-approval settings
                 if (isset($preApproved[$username])) {

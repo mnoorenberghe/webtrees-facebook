@@ -627,7 +627,8 @@ $(document).ready(function() {
         //}
 
           // Use the Facebook profile photo if there isn't an existing photo
-          if (!empty($controller->record) && !$controller->record->findHighlightedMedia()
+          if (!empty($controller->record) && method_exists($controller->record, 'findHighlightedMedia')
+              && !$controller->record->findHighlightedMedia()
               && $user_id = get_user_from_gedcom_xref(WT_GED_ID, $controller->record->getXref())) {
               if ($fbUsername = get_user_setting($user_id, self::user_setting_facebook_username)) {
                   $fbPicture = 'https://graph.facebook.com/'.$fbUsername.'/picture';

@@ -70,13 +70,15 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
   <tbody>
     <?php
       if (!empty($linkedUsers)) {
+        $index = 0;
         foreach ($linkedUsers as $user_id => $user) {
+          $class = ($index++ % 2 ? 'odd' : 'even');
           echo '
-    <tr>
+    <tr class="'.$class.'">
       <td><a href="admin_users.php?filter='.$user->user_name.'">'.$user->user_name.'</a></td>
       <td><a href="admin_users.php?filter='.$user->user_name.'">'.$user->real_name.'</a></td>
       <td>'.$this->facebookProfileLink($user->facebook_username).'</td>
-      <td><button name="deleteLink" value="'.$user_id.'" class="icon-delete" formnovalidate="formnovalidate" style="border:none;"></button></td>
+      <td style="text-align: center;"><button name="deleteLink" value="'.$user_id.'" class="icon-delete" formnovalidate="formnovalidate" style="border:none;"></button></td>
     </tr>';
         }
       }
@@ -130,14 +132,16 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
     <tr class="preapproved_row_add">
       <td><input type="text" name="preApproved_new_facebook_username" <?php echo $usernameValidationAttrs; ?> size="18"/></td>
       <?php
+        $index = 0;
         foreach (WT_Tree::getAll() as $tree) {
-          echo '<td>',
+          $class = ($index++ % 2 ? 'odd' : 'even');
+          echo '<td class="'.$class.'">',
           $this->indiField('preApproved[new]['.$tree->tree_id.'][rootid]',
                            '', $tree->tree_name_url), '</td>',
-          '<td>',
+          '<td class="'.$class.'">',
           $this->indiField('preApproved[new]['.$tree->tree_id.'][gedcomid]',
                            '', $tree->tree_name_url), '</td>',
-          '<td>',
+          '<td class="'.$class.'">',
           select_edit_control('preApproved[new]['.$tree->tree_id.'][canedit]',
                               $this->get_edit_options(), NULL, NULL), '</td>';
         }
@@ -149,14 +153,16 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
           echo '
 <tr>
       <td>' . $this->facebookProfileLink($fbUsername) . '</td>';
+          $index = 0;
           foreach (WT_Tree::getAll() as $tree) {
-            echo '<td>',
+            $class = ($index++ % 2 ? 'odd' : 'even');
+            echo '<td class="'.$class.'">',
             $this->indiField('preApproved['.$fbUsername.']['.$tree->tree_id.'][rootid]',
                              @$details[$tree->tree_id]['rootid'], $tree->tree_name_url), '</td>',
-            '<td>',
+            '<td class="'.$class.'">',
             $this->indiField('preApproved['.$fbUsername.']['.$tree->tree_id.'][gedcomid]',
                              @$details[$tree->tree_id]['gedcomid'], $tree->tree_name_url), '</td>',
-            '<td>',
+            '<td class="'.$class.'">',
             select_edit_control('preApproved['.$fbUsername.']['.$tree->tree_id.'][canedit]',
                                 $this->get_edit_options(), NULL, @$details[$tree->tree_id]['canedit']),
 	    '</td>';

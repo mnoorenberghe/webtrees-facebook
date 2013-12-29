@@ -96,9 +96,11 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
 <form method="post" action="">
   <?php echo WT_Filter::getCsrf(); ?>
   <p><?php echo WT_I18N::translate("If you know a user's Facebook username but they don't have an account in webtrees, you can pre-approve one so they can login immediately the first time they visit."); ?></p>
-  <p><a href="?mod=facebook&mod_action=admin_friend_picker">
+  <ul>
+    <li><a href="?mod=facebook&mod_action=admin_friend_picker">
       <?php echo WT_I18N::translate("Import from your Facebook friends"); ?>
-  </a></p>
+    </a></li>
+  </ul>
 <p><input type="submit" name="savePreapproved" value="<?php echo WT_I18N::translate('Save'); ?>"></p>
 <table id="preapproved">
   <thead>

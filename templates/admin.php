@@ -149,10 +149,11 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
     </tr>
     <?php
       if (!empty($preApproved)) {
+        ksort($preApproved);
         foreach ($preApproved as $fbUsername => $details) {
           echo '
 <tr>
-      <td>' . $this->facebookProfileLink($fbUsername) . '</td>';
+      <td nowrap="nowrap">' . $this->facebookProfileLink($fbUsername) . '</td>';
           $index = 0;
           foreach (WT_Tree::getAll() as $tree) {
             $class = ($index++ % 2 ? 'odd' : 'even');

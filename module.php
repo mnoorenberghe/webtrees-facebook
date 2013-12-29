@@ -316,7 +316,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     }
 
     private function facebookProfileLink($username) {
-        return '<a href="https://www.facebook.com/'.$username.'"><img src="https://graph.facebook.com/'.$username.'/picture?type=square" height="25" width="25"/> '.$username.'</a>';
+        return '<a href="https://www.facebook.com/'.$username.'"><img src="https://graph.facebook.com/'.$username.'/picture?type=square" height="25" width="25"/>&nbsp;'.$username.'</a>';
     }
 
     // Guidelines from https://www.facebook.com/help/105399436216001

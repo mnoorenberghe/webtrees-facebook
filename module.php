@@ -315,6 +315,10 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 	return $statement->execute(array(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUsername)))->fetchOne();
     }
 
+    private function facebookProfileLink($username) {
+        return '<a href="https://www.facebook.com/'.$username.'"><img src="https://graph.facebook.com/'.$username.'/picture?type=square" height="25" width="25"/> '.$username.'</a>';
+    }
+
     // Guidelines from https://www.facebook.com/help/105399436216001
     private function cleanseFacebookUsername($username) {
         // Case and periods don't matter

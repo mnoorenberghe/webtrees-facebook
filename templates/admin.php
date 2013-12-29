@@ -75,7 +75,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
     <tr>
       <td><a href="admin_users.php?filter='.$user->user_name.'">'.$user->user_name.'</a></td>
       <td><a href="admin_users.php?filter='.$user->user_name.'">'.$user->real_name.'</a></td>
-      <td><a href="https://www.facebook.com/'.$user->facebook_username.'">'.$user->facebook_username.'</a></td>
+      <td>'.$this->facebookProfileLink($user->facebook_username).'</td>
       <td><button name="deleteLink" value="'.$user_id.'" class="icon-delete" formnovalidate="formnovalidate" style="border:none;"></button></td>
     </tr>';
         }
@@ -148,7 +148,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
         foreach ($preApproved as $fbUsername => $details) {
           echo '
 <tr>
-      <td><a href="https://www.facebook.com/'.$fbUsername.'">'.$fbUsername.'</a></td>';
+      <td>' . $this->facebookProfileLink($fbUsername) . '</td>';
           foreach (WT_Tree::getAll() as $tree) {
             echo '<td>',
             $this->indiField('preApproved['.$fbUsername.']['.$tree->tree_id.'][rootid]',

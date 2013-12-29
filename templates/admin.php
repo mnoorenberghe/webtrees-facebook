@@ -65,6 +65,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
       <th><?php echo WT_I18N::translate('webtrees Username'); ?></th>
       <th><?php echo WT_I18N::translate('Real name'); ?></th>
       <th><?php echo WT_I18N::translate('Facebook Account'); ?></th>
+      <th><?php echo WT_I18N::translate('Unlink'); ?></th>
     </tr>
   </thead>
   <tbody>

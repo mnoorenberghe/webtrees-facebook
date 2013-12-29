@@ -21,7 +21,7 @@ if (!defined('WT_WEBTREES')) {
     exit;
 }
 
-define('WT_FACEBOOK_VERSION', "v1.0-beta.1");
+define('WT_FACEBOOK_VERSION', "v1.0-beta.2");
 
 class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Module_Menu {
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
@@ -471,7 +471,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             }
 
             // check if the username is already in use
-            $username = $facebookUser->username;
+            $username = $this->cleanseFacebookUsername($facebookUser->username);
             if (get_user_id($username)) {
                 // fallback to email as username since we checked above that a user with the email didn't exist.
                 $username = $facebookUser->email;
@@ -485,8 +485,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             // From login.php:
             AddToLog('User registration requested for: ' . $username, 'auth');
             if ($user_id = create_user($username, $facebookUser->name, $facebookUser->email, $password)) {
-                $verifiedByAdmin = !$REQUIRE_ADMIN_AUTH_REGISTRATION || isset($preApproved[$facebookUser->username]);
-                set_user_setting($user_id, self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username));
+                $verifiedByAdmin = !$REQUIRE_ADMIN_AUTH_REGISTRATION || isset($preApproved[$username]);
+                set_user_setting($user_id, self::user_setting_facebook_username, $username);
                 set_user_setting($user_id, 'language',          WT_LOCALE);
                 set_user_setting($user_id, 'verified',          1);
                 set_user_setting($user_id, 'verified_by_admin', $verifiedByAdmin);
@@ -500,11 +500,11 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 set_user_setting($user_id, 'sessiontime',       0);
                 set_user_setting($user_id, 'comment',
                                  @$facebookUser->birthday . "\n " .
-                                 "https://www.facebook.com/" . $this->cleanseFacebookUsername($facebookUser->username));
+                                 "https://www.facebook.com/" . $username);
 
                 // Apply pre-approval settings
-                if (isset($preApproved[$facebookUser->username])) {
-                    $userSettings = $preApproved[$facebookUser->username];
+                if (isset($preApproved[$username])) {
+                    $userSettings = $preApproved[$username];
                     foreach ($userSettings as $gedcom => $userGedcomSettings) {
                         $tree = WT_Tree::get($gedcom);
                         if (!$tree) {
@@ -518,7 +518,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                         }
                     }
                     // Remove the pre-approval record
-                    unset($preApproved[$facebookUser->username]);
+                    unset($preApproved[$username]);
                     set_module_setting($this->getName(), 'preapproved', serialize($preApproved));
                 }
 

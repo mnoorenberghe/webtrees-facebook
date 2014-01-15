@@ -13,13 +13,16 @@ All of the authentication is done on the server-side so no external JavaScript f
 1. Install the module by extracting/cloning the directory with the name `facebook` inside ```/modules_v3/```.
 2. In the 'administration' section of your webtrees site, visit the 'Modules' page and check the box to
    enable the 'Facebook' module and then click 'Save'.
-3. If you don't already have a Facebook application setup for the site, visit
+3. If you don't have a Facebook Developer account, [create one](https://developers.facebook.com/docs/create-developer-account/)
+   at https://developers.facebook.com/
+4. If you don't already have a Facebook application setup for the site, visit
    https://developers.facebook.com/apps/ and set one up by clicking 'Create a New App' from the
-   Apps menu and specifying a 'Display Name' and 'Category'. Once the App is created, click the
-   'Settings' menu and put your domain name (e.g. example.com) in the 'App Domains' field.
-   Click 'Add platform', choose 'Website' and enter your 'Site URL' (e.g. http://example.com) and
-   'Save Changes'.
-4. Specify the Facebook API App ID and Secret at ```{WEBTREES_ROOT}/module.php?mod=facebook&mod_action=admin```
+   Apps menu and specify a 'Display Name' and 'Category'.
+   * Once the App is created, click the 'Settings' menu and put your domain name (e.g. example.com)
+     in the 'App Domains' field.
+   * Click 'Add platform', choose 'Website' and enter your 'Site URL' (e.g. http://example.com).
+   * Click 'Save Changes'.
+5. Specify the Facebook API App ID and Secret at ```{WEBTREES_ROOT}/module.php?mod=facebook&mod_action=admin```
    which is accessible as a 'Facebook' link from the bottom of the administration menu.
 
 ## Known Issues ##

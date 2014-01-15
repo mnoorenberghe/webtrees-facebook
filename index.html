@@ -59,9 +59,11 @@ to allow new users via Facebook.</li>
 <li>In the 'administration' section of your webtrees site, visit the 'Modules' page and check the box to
 enable the 'Facebook' module and then click 'Save'.</li>
 <li>If you don't already have a Facebook application setup for the site, visit
-<a href="https://developers.facebook.com/apps">https://developers.facebook.com/apps</a> and set one up by clicking 'Create New App' and specifying an
-App Name. Once the App is created, indicate that you want to integrate with Facebook as a 'Website
-with Facebook Login' and provide the URL to your webtrees site.</li>
+<a href="https://developers.facebook.com/apps/">https://developers.facebook.com/apps/</a> and set one up by clicking 'Create a New App' from the
+ Apps menu and specifying a 'Display Name' and 'Category'. Once the App is created, click the
+ 'Settings' menu and put your domain name (e.g. example.com) in the 'App Domains' field.
+ Click 'Add platform', choose 'Website' and enter your 'Site URL' (e.g. http://example.com) and
+ 'Save Changes'.</li>
 <li>Specify the Facebook API App ID and Secret at <code>{WEBTREES_ROOT}/module.php?mod=facebook&amp;mod_action=admin</code>
 which is accessible as a 'Facebook' link from the bottom of the administration menu.</li>
 </ol><h2>
@@ -74,6 +76,7 @@ approval is required for new accounts, the administrator can delete the new acco
 existing account to the user's Facebook account. The administrator can also link existing users to
 their Facebook accounts in advance (where possible) to avoid this situation.</li>
 <li>There is no comment field during registration with a Facebook account.</li>
+<li>The login button will not appear if all trees have "Require visitor authentication".</li>
 </ul>
       </section>
     </div>

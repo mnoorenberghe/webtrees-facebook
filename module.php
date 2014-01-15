@@ -156,6 +156,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             ->pageHeader();
 
         $linkedUsers = array();
+        $unlinkedUsers = array();
         $users = $this->get_users_with_module_settings();
         foreach ($users as $userid => $user) {
             if (empty($user[0]->facebook_username)) {

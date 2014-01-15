@@ -30,6 +30,18 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
     private $hideStandardForms = false;
 
+    public function __construct() {
+        parent::__construct();
+        // Load any local user translations
+        if (is_dir(WT_MODULES_DIR . $this->getName() . '/language')) {
+            if (file_exists(WT_MODULES_DIR . $this->getName() . '/language/' . WT_LOCALE . '.mo')) {
+                $tr = new Zend_Translate('gettext', WT_MODULES_DIR . $this->getName() . '/language/'
+                                         . WT_LOCALE . '.mo', WT_LOCALE);
+                Zend_Registry::get('Zend_Translate')->addTranslation($tr);
+            }
+        }
+    }
+
     // Implement WT_Module_Config
     public function getConfigLink() {
         return 'module.php?mod='.$this->getName().'&amp;mod_action=admin';

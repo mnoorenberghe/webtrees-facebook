@@ -21,7 +21,7 @@ if (!defined('WT_WEBTREES')) {
     exit;
 }
 
-define('WT_FACEBOOK_VERSION', "v1.0-beta.3");
+define('WT_FACEBOOK_VERSION', "v1.0-beta.4");
 
 class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Module_Menu {
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
@@ -31,7 +31,10 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     private $hideStandardForms = false;
 
     public function __construct() {
-        parent::__construct();
+        if (method_exists(get_parent_class(), '__construct')) {
+            // Does't exist before webtrees 1.5.2
+            parent::__construct();
+        }
         // Load any local user translations
         if (is_dir(WT_MODULES_DIR . $this->getName() . '/language')) {
             if (file_exists(WT_MODULES_DIR . $this->getName() . '/language/' . WT_LOCALE . '.mo')) {

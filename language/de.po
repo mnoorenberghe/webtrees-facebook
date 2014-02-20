@@ -1,15 +1,15 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: facebook\n"
-"POT-Creation-Date: 2014-01-15 18:34+0100\n"
-"PO-Revision-Date: 2014-01-15 18:43+0100\n"
+"POT-Creation-Date: 2014-02-15 00:34+0100\n"
+"PO-Revision-Date: 2014-02-15 00:36+0100\n"
 "Last-Translator: Hermann Hartenthaler <hermann@hartenthaler,de>\n"
 "Language-Team: Hermann Hartenthaler <hermann@hartenthaler.de>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.3\n"
+"X-Generator: Poedit 1.6.4\n"
 "X-Poedit-KeywordsList: translate;noop;plural:1,2;translate_c:2,1c\n"
 "X-Poedit-Basepath: .\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -17,85 +17,85 @@ msgstr ""
 "X-Poedit-SearchPath-0: \\\\NETZLAUFWERK2\\web"
 "\\webtrees_15\\modules_v3\\facebook\n"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:51
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:52
 msgid "Facebook"
 msgstr "Facebook"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:56
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:57
 msgid "Allow users to login with Facebook."
 msgstr "Erlaubt den Nutzern die Anmeldung über Facebook."
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:78
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:79
 msgid "Visitor"
 msgstr ""
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:79
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:80
 msgid "Member"
 msgstr ""
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:80
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:81
 msgid "Editor"
 msgstr ""
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:81
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:82
 msgid "Moderator"
 msgstr ""
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:82
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:83
 msgid "Manager"
 msgstr ""
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:96
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:97
 msgid "Settings saved"
 msgstr "Einstellungen wurden gespeichert"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:103
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:104
 msgid "User linked"
 msgstr "Nutzer verbunden"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:105
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:106
 msgid "The user could not be linked"
 msgstr "Nutzer kann nicht verbunden werden"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:112
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:113
 msgid "User unlinked"
 msgstr "Nutzer unverbunden"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:114
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:115
 msgid "The link could not be deleted"
 msgstr "Die Verbindung kann nicht gelöscht werden"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:124
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:125
 msgid "Pre-approved user added"
 msgstr "Vorangemeldeter Nutzer wurde hinzugefügt"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:133
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:134
 msgid "Changes to pre-approved users saved"
 msgstr "Änderungen bei den vorangemeldeten Nutzern wurden gespeichert"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:140
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:141
 msgid "Pre-approved user deleted"
 msgstr "Vorangemeldeter Nutzer wurde gelöscht"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:142
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:143
 msgid "The pre-approved user could not be deleted"
 msgstr "Der vorangemeldete Nutzer kann nicht gelöscht werden"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:171
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:172
 msgid "Missing Facebook username"
 msgstr "Fehlender Facebook Nutzername"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:175
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:176
 msgid "User is already registered"
 msgstr "Nutzer ist bereits registriert"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:220
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:221
 msgid "Facebook logins have not been setup by the administrator."
 msgstr ""
 "Facebook-Anmeldeinformationen wurden bislang vom Administrator nicht "
 "angelegt."
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:229
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:230
 msgid ""
 "You must allow access to your Facebook account in order to login with "
 "Facebook."
@@ -103,16 +103,16 @@ msgstr ""
 "Wenn Sie sich über Facebook anmelden möchten, dann müssen Sie den Zugriff "
 "auf Ihr Facebook-Konto gewähren."
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:231
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:232
 msgid "An error occurred trying to log you in with Facebook."
 msgstr "Bei der Anmeldung über Facebook ist ein Fehler aufgetaucht."
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:235
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:236
 msgid "This form has expired.  Try again."
 msgstr "Dieses Formular ist abgelaufen. Bitte versuchen Sie es erneut."
 
 # tbd
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:275
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:276
 msgid ""
 "Your Facebook code is invalid. This can happen if you hit back in your "
 "browser after login or if Facebook logins have been setup incorrectly by the "
@@ -122,23 +122,24 @@ msgstr ""
 "browser after login or if Facebook logins have been setup incorrectly by the "
 "administrator."
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:286
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:287
 msgid "Could not fetch your information from Facebook. Please try again."
 msgstr ""
-"Zugriff auf ihre Informationen bei Facebook ist nicht möglich. Bitte erneut "
-"versuchen."
+"Auf Ihre Facebook-Informationen konnte nicht zugegriffen werden. Bitte "
+"versuchen Sie es noch einmal."
 
-# tbd
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:291
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:292
 msgid "The state does not match. You may been tricked to load this page."
-msgstr "The state does not match. You may been tricked to load this page."
+msgstr ""
+"Der Status passt nicht. Vielleicht wurde etwas manipuliert um diese Seite zu "
+"laden."
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:354
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:355
 msgid "Users successfully imported from Facebook"
 msgstr "Nutzer wurden erfolgreich aus Facebook importiert"
 
 # tbd
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:360
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:361
 #, php-format
 msgid ""
 "You must <a href='%s'>login to the site via Facebook</a> in order to import "
@@ -147,21 +148,21 @@ msgstr ""
 "You must <a href='%s'>login to the site via Facebook</a> in order to import "
 "friends from Facebook"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:366
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:367
 msgid "Could not fetch your friends from Facebook."
 msgstr ""
 "Auf die Liste Ihrer Freunde bei Facebook konnte nicht zugegriffen werden."
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:376
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:377
 msgid "No friend data"
 msgstr ""
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:391
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:392
 #: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/templates/admin.php:121
 msgid "Role"
 msgstr "Rolle"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:449
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:450
 msgid ""
 "Only verified Facebook accounts are authorized. Please verify your account "
 "on Facebook and then try again"
@@ -170,16 +171,15 @@ msgstr ""
 "verifizieren Sie Ihr Facbook-Konto zuerst und versuchen Sie es dann erneut "
 "sich hier anzumelden."
 
-# tbd
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:466
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:467
 msgid ""
 "This account has not been verified.  Please check your email for a "
 "verification message."
 msgstr ""
-"This account has not been verified.  Please check your email for a "
-"verification message."
+"Diese Kennung wurde noch nicht verifiziert.  Bitte prüfen Sie Ihren E-Mail-"
+"Eingang bezüglich einer Verifikations-Nachricht."
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:469
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:470
 msgid ""
 "This account has not been approved.  Please wait for an administrator to "
 "approve it."
@@ -187,12 +187,12 @@ msgstr ""
 "Dieses Nutzerkonto wurde noch nicht bestätigt. Bitte warten Sie, bis es von "
 "einem Administrator freigegeben worden ist."
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:481
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:482
 msgid "The administrator has disabled registrations."
 msgstr "Der Administrator hat Anmeldungen ausgeschaltet."
 
 # tbd
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:561
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:562
 msgid ""
 "There was an error verifying your account. Contact the site administrator if "
 "you are unable to access the site."
@@ -200,16 +200,16 @@ msgstr ""
 "There was an error verifying your account. Contact the site administrator if "
 "you are unable to access the site."
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:574
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:575
 msgid "Unable to create your account.  Please try again."
 msgstr ""
 "Es ist nicht möglich ihr Konto anzulegen. Bitte versuchen Sie es erneut."
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:575
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:576
 msgid "Back"
 msgstr "Zurück"
 
-#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:603
+#: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/module.php:604
 msgid "Find an individual"
 msgstr "Suche eine Person"
 
@@ -243,9 +243,9 @@ msgid ""
 "NOTE: New user registration is disabled in Site configuration so only "
 "existing users will be able to login."
 msgstr ""
-"ACHTUNG: In der Konfiguration ist festgelegt, dass sich keine neuen Nutzer "
-"anmelden können, so dass also nur bereits existierende Nutzer  in der Lage "
-"sein werden, sich anzumelden."
+"ACHTUNG: Die Registrierung neuer Nutzer ist in der webtrees "
+"Systemkonfiguration ausgeschaltet, so dass sich nur bereits existierende "
+"Nutzer anmelden können."
 
 #: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/templates/admin.php:43
 msgid "Require verified Facebook accounts"
@@ -315,99 +315,4 @@ msgstr ""
 
 #: \\NETZLAUFWERK2\web\webtrees_15\modules_v3\facebook/templates/admin.php:120
 msgid "Individual record"
-msgstr "Datensatz zu einer Person"
-
-#~ msgid ""
-#~ "A grandchild with a birth date of %s suggests this person was born at "
-#~ "least 30 years earlier than that."
-#~ msgstr ""
-#~ "A grandchild with a birth date of %s suggests this person was born at "
-#~ "least 30 years earlier than that."
-
-#~ msgid ""
-#~ "A marriage with a date of %s suggests they were born at least 10 years "
-#~ "earlier than that."
-#~ msgstr ""
-#~ "A marriage with a date of %s suggests they were born at least 10 years "
-#~ "earlier than that."
-
-#~ msgid ""
-#~ "A parent with a birth date of %s is more than 45 years older than this "
-#~ "person."
-#~ msgstr ""
-#~ "A parent with a birth date of %s is more than 45 years older than this "
-#~ "person."
-
-#~ msgid ""
-#~ "A spouse with a date of %s is more than 40 years older than this person."
-#~ msgstr ""
-#~ "A spouse with a date of %s is more than 40 years older than this person."
-
-#~ msgid "According to the privacy settings this person is alive."
-#~ msgstr "According to the privacy settings this person is alive."
-
-#~ msgid "An estimated death date has been calculated as %s"
-#~ msgstr "An estimated death date has been calculated as %s"
-
-#~ msgid "An event occurred in this person's life more than %s years ago."
-#~ msgstr "An event occurred in this person's life more than %s years ago."
-
-#~ msgid "Confidential"
-#~ msgstr "Vertraulich"
-
-#~ msgid "Death is recorded with an unknown date."
-#~ msgstr "Der Tod wurde ohne Angabe eines Datums eingetragen."
-
-#~ msgid "Died: %s"
-#~ msgstr "Gestorben: %s"
-
-#~ msgid "Explanation"
-#~ msgstr "Erklärung"
-
-#~ msgid "Fancy Privacy List"
-#~ msgstr "Fancy Privacy List"
-
-#~ msgid "ID"
-#~ msgstr "ID"
-
-#~ msgid "Presumably still alive"
-#~ msgstr "wahrscheinlich noch lebend"
-
-#~ msgid "Presumed death"
-#~ msgstr "wahrscheinlich verstorben"
-
-#~ msgid "Privacy settings"
-#~ msgstr "Vertraulichkeitseinstellungen"
-
-#~ msgid "That is less than %s years ago."
-#~ msgstr "Das ist weniger als %s Jahre her."
-
-#~ msgid ""
-#~ "This is a module for site admins only. With this module you easily can "
-#~ "see the privacy settings for each individual in your tree."
-#~ msgstr ""
-#~ "Dies ist ein Modul nur für Administratoren. Mit diesem Modul kann man die "
-#~ "Vertraulichkeitseinstellungen aller Personen im Baum überprüfen."
-
-#~ msgid ""
-#~ "This person is assumed to be alive because the privacy settings of this "
-#~ "person could not be calculated."
-#~ msgstr ""
-#~ "Von dieser Person wird angenommen, dass sie noch lebt, da die "
-#~ "Vertraulichkeitseinstufung dieser Person nicht berechnet werden kann."
-
-#~ msgid "This person was born less then %s years ago."
-#~ msgstr "Diese Person ist vor weniger als %s Jahren geboren."
-
-#~ msgid "This record has a custom privacy setting."
-#~ msgstr "Dieser Eintrag hat eine spezifische Vertraulichkeitseinstellung."
-
-#~ msgid "You disabled the privacy options for this tree."
-#~ msgstr ""
-#~ "Sie haben die Option \"Vertraulichkeit\" für diesen Baum ausgeschaltet."
-
-#~ msgid "registered users only"
-#~ msgstr "nur für angemeldete Nutzer"
-
-#~ msgid "the name is displayed to %s"
-#~ msgstr "der Name wird für %s angezeigt"
+msgstr ""

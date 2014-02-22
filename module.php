@@ -256,7 +256,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             // User has already authorized the app and we have a token so get their info.
             $graph_url = "https://graph.facebook.com/me?access_token="
                 . $WT_SESSION->facebook_access_token;
-            $response = file_get_contents($graph_url);
+            $response = $this->fetch_url($graph_url);
             if ($response === FALSE) {
                 AddToLog("Facebook: Access token is no longer valid", 'error');
                 // Clear the state and try again with a new token.
@@ -279,19 +279,23 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 . "client_id=" . $app_id . "&redirect_uri=" . urlencode($connect_url)
                 . "&client_secret=" . $app_secret . "&code=" . $code;
 
-            $response = @file_get_contents($token_url);
+            $response = $this->fetch_url($token_url);
             if ($response === FALSE) {
                 AddToLog("Facebook: Couldn't exchange the code for an access token", 'error');
                 $this->error_page(WT_I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
             $params = null;
             parse_str($response, $params);
+            if (empty($params['access_token'])) {
+                AddToLog("Facebook: The access token was empty", 'error');
+                $this->error_page(WT_I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
+            }
 
             $WT_SESSION->facebook_access_token = $params['access_token'];
 
             $graph_url = "https://graph.facebook.com/me?access_token="
                 . $WT_SESSION->facebook_access_token;
-            $meResponse = @file_get_contents($graph_url);
+            $meResponse = $this->fetch_url($graph_url);
             if ($meResponse === FALSE) {
                 $this->error_page(WT_I18N::translate("Could not fetch your information from Facebook. Please try again."));
             }
@@ -300,6 +304,22 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         } else {
             $this->error_page(WT_I18N::translate("The state does not match. You may been tricked to load this page."));
         }
+    }
+
+    private function fetch_url($url) {
+        try {
+            $client = new Zend_Http_Client($url,
+                                           array(
+                                                 'keepalive' => true,
+                                                 'storeresponse' => false
+                                                 )
+                                           );
+            $response = $client->request();
+        } catch (Exception $e) {
+            AddToLog($e, 'error');
+            return false;
+        }
+        return $response->isError() ? false : $response->getBody();
     }
 
     private function hidden_input($name, $value) {
@@ -375,7 +395,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         }
         $graph_url = "https://graph.facebook.com/me/friends?fields=first_name,last_name,name,username&access_token="
             . $WT_SESSION->facebook_access_token;
-        $friendsResponse = @file_get_contents($graph_url);
+        $friendsResponse = $this->fetch_url($graph_url);
         if ($friendsResponse === FALSE) {
             $this->error_page(WT_I18N::translate("Could not fetch your friends from Facebook."));
         }

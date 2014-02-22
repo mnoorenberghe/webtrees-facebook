@@ -21,7 +21,7 @@ if (!defined('WT_WEBTREES')) {
     exit;
 }
 
-define('WT_FACEBOOK_VERSION', "v1.0-beta.4");
+define('WT_FACEBOOK_VERSION', "v1.0-beta.5");
 
 class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Module_Menu {
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
@@ -32,7 +32,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
     public function __construct() {
         if (method_exists(get_parent_class(), '__construct')) {
-            // Does't exist before webtrees 1.5.2
+            // Doesn't exist before webtrees 1.5.2
             parent::__construct();
         }
         // Load any local user translations

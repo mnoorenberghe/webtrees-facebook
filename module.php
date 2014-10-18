@@ -21,12 +21,13 @@ if (!defined('WT_WEBTREES')) {
     exit;
 }
 
-define('WT_FACEBOOK_VERSION', "v1.0-beta.5");
+define('WT_FACEBOOK_VERSION', "v1.0-beta.6");
 
 class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Module_Menu {
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
     const user_setting_facebook_username = 'facebook_username';
     const profile_photo_large_width = 1024;
+    const api_dir = "v1.0/";
 
     private $hideStandardForms = false;
 
@@ -255,7 +256,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             echo("<script> top.location.href='" . $dialog_url . "'</script>");
         } else if (!empty($WT_SESSION->facebook_access_token)) {
             // User has already authorized the app and we have a token so get their info.
-            $graph_url = "https://graph.facebook.com/me?access_token="
+            $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?access_token="
                 . $WT_SESSION->facebook_access_token;
             $response = $this->fetch_url($graph_url);
             if ($response === FALSE) {
@@ -276,7 +277,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         } else if (!empty($WT_SESSION->facebook_state) && ($WT_SESSION->facebook_state === $_REQUEST['state'])) {
             // User has already been redirected to login dialog.
             // Exchange the code for an access token.
-            $token_url = "https://graph.facebook.com/oauth/access_token?"
+            $token_url = "https://graph.facebook.com/" . self::api_dir . "oauth/access_token?"
                 . "client_id=" . $app_id . "&redirect_uri=" . urlencode($connect_url)
                 . "&client_secret=" . $app_secret . "&code=" . $code;
 
@@ -294,7 +295,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
             $WT_SESSION->facebook_access_token = $params['access_token'];
 
-            $graph_url = "https://graph.facebook.com/me?access_token="
+            $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?access_token="
                 . $WT_SESSION->facebook_access_token;
             $meResponse = $this->fetch_url($graph_url);
             if ($meResponse === FALSE) {
@@ -353,7 +354,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     }
 
     private function facebookProfileLink($username) {
-        return '<a href="https://www.facebook.com/'.$username.'"><img src="https://graph.facebook.com/'.$username.'/picture?type=square" height="25" width="25"/>&nbsp;'.$username.'</a>';
+        return '<a href="https://www.facebook.com/'.$username.'"><img src="https://graph.facebook.com/' . self::api_dir .$username.'/picture?type=square" height="25" width="25"/>&nbsp;'.$username.'</a>';
     }
 
     // Guidelines from https://www.facebook.com/help/105399436216001
@@ -394,7 +395,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         if (empty($WT_SESSION->facebook_access_token)) {
             $this->error_page(WT_I18N::translate("You must <a href='%s'>login to the site via Facebook</a> in order to import friends from Facebook", "index.php?logout=1"));
         }
-        $graph_url = "https://graph.facebook.com/me/friends?fields=first_name,last_name,name,username&access_token="
+        $graph_url = "https://graph.facebook.com/" . self::api_dir . "me/friends?fields=first_name,last_name,name,username&access_token="
             . $WT_SESSION->facebook_access_token;
         $friendsResponse = $this->fetch_url($graph_url);
         if ($friendsResponse === FALSE) {
@@ -680,7 +681,7 @@ $(document).ready(function() {
               && !$controller->record->findHighlightedMedia()
               && $user_id = get_user_from_gedcom_xref(WT_GED_ID, $controller->record->getXref())) {
               if ($fbUsername = get_user_setting($user_id, self::user_setting_facebook_username)) {
-                  $fbPicture = 'https://graph.facebook.com/'.$fbUsername.'/picture';
+                  $fbPicture = 'https://graph.facebook.com/' . self::api_dir . $fbUsername . '/picture';
                   $controller->addInlineJavaScript('$(document).ready(function() {' .
                       '$("#indi_mainimage").html("<a class=\"gallery\" href=\"'.$fbPicture.'?width=' .
                       self::profile_photo_large_width.'\" data-obje-url=\"'.$fbPicture.'?type=large\">' .

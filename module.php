@@ -23,6 +23,7 @@ if (!defined('WT_WEBTREES')) {
 
 define('WT_FACEBOOK_VERSION', "v1.0-beta.6");
 
+use WT\Auth;
 use WT\Log;
 use WT\User;
 
@@ -94,7 +95,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
     private function admin() {
         $mod_name = $this->getName();
-        $preApproved = unserialize(get_module_setting($mod_name, 'preapproved'));
+        $preApproved = unserialize($this->getSetting('preapproved'));
 
         if (WT_Filter::post('saveAPI') && WT_Filter::checkCsrf()) {
             $this->setSetting('app_id', WT_Filter::post('app_id', WT_REGEX_ALPHANUM));
@@ -461,11 +462,15 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         $verified=$user->getPreference('verified');
         $approved=$user->getPreference('verified_by_admin');
         if ($verified && $approved || $is_admin) {
-            // Whenever we change our authorisation level change the session ID
-            Zend_Session::regenerateId();
-            $WT_SESSION->wt_user = $user_id;
+            Auth::login($user);
+            Log::addAuthenticationLog('Login: ' . Auth::user()->getUserName() . '/' . Auth::user()->getRealName());
+
+            $WT_SESSION->timediff  = 0; // TODO
+            $WT_SESSION->locale    = Auth::user()->getPreference('language');
+            $WT_SESSION->theme_dir = Auth::user()->getPreference('theme');
+
             Zend_Session::writeClose();
-            Log::addAuthenticationLog('Login successful ->'.$user_name.'<-');
+
             return $user_id;
         } elseif (!$is_admin && !$verified) {
             Log::addAuthenticationLog('Login failed ->'.$user_name.'<- not verified');

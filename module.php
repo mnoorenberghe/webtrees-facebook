@@ -479,7 +479,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
      */
     private function login_or_register(&$facebookUser, $url='') {
 	global $WT_SESSION;
-        $REQUIRE_ADMIN_AUTH_REGISTRATION = WT_Site::preference('REQUIRE_ADMIN_AUTH_REGISTRATION');
+        $REQUIRE_ADMIN_AUTH_REGISTRATION = WT_Site::getPreference('REQUIRE_ADMIN_AUTH_REGISTRATION');
 
         if ($this->getSetting('require_verified', 1) && empty($facebookUser->verified)) {
             $this->error_page(WT_I18N::translate('Only verified Facebook accounts are authorized. Please verify your account on Facebook and then try again'));
@@ -513,7 +513,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $this->error_page($message);
         } else { // This is a new Facebook user who may or may not already have a manual account
 
-            if (!WT_Site::preference('USE_REGISTRATION_MODULE')) {
+            if (!WT_Site::getPreference('USE_REGISTRATION_MODULE')) {
                 $this->error_page('<p>' . WT_I18N::translate('The administrator has disabled registrations.') . '</p>');
             }
 

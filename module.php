@@ -101,7 +101,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $this->setSetting('app_secret', WT_Filter::post('app_secret', WT_REGEX_ALPHANUM));
             $this->setSetting('require_verified', WT_Filter::post('require_verified', WT_REGEX_INTEGER, false));
             $this->setSetting('hide_standard_forms', WT_Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
-            AddToLog("Facebook: API settings changed", 'config');
+            Log::addConfigurationLog("Facebook: API settings changed");
             WT_FlashMessages::addMessage(WT_I18N::translate('Settings saved'));
         } else if (WT_Filter::post('addLink') && WT_Filter::checkCsrf()) {
             $user_id = WT_Filter::post('user_id', WT_REGEX_INTEGER);
@@ -114,7 +114,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                     unset($preApproved[$facebook_username]);
                     $this->setSetting('preapproved', serialize($preApproved));
                 }
-                AddToLog("Facebook: User $user_id linked to Facebook user $facebook_username", 'config');
+                Log::addConfigurationLog("Facebook: User $user_id linked to Facebook user $facebook_username");
                 WT_FlashMessages::addMessage(WT_I18N::translate('User %1$s linked to Facebook user %2$s', $user_id, $facebook_username));
             } else {
                 WT_FlashMessages::addMessage(WT_I18N::translate('The user could not be linked'));
@@ -124,7 +124,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             if ($user_id) {
                 $user = User::find($user_id);
                 $user->setPreference(self::user_setting_facebook_username, NULL);
-                AddToLog("Facebook: User $user_id unlinked from a Facebook user", 'config');
+                Log::addConfigurationLog("Facebook: User $user_id unlinked from a Facebook user");
                 WT_FlashMessages::addMessage(WT_I18N::translate('User unlinked'));
             } else {
                 WT_FlashMessages::addMessage(WT_I18N::translate('The link could not be deleted'));
@@ -136,7 +136,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 $row = $table['new'];
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
                 $this->setSetting('preapproved', serialize($preApproved));
-                AddToLog("Facebook: Pre-approved Facebook user: $facebook_username", 'config');
+                Log::addConfigurationLog("Facebook: Pre-approved Facebook user: $facebook_username");
                 WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user "%s" added', $facebook_username));
             }
             unset($table['new']);
@@ -145,14 +145,14 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
             }
             $this->setSetting('preapproved', serialize($preApproved));
-            AddToLog("Facebook: Pre-approved Facebook users changed", 'config');
+            Log::addConfigurationLog("Facebook: Pre-approved Facebook users changed");
             WT_FlashMessages::addMessage(WT_I18N::translate('Changes to pre-approved users saved'));
         } else if (WT_Filter::post('deletePreapproved') && WT_Filter::checkCsrf()) {
             $facebook_username = trim(WT_Filter::post('deletePreapproved', WT_REGEX_USERNAME));
             if ($facebook_username && isset($preApproved[$facebook_username])) {
                 unset($preApproved[$facebook_username]);
                 $this->setSetting('preapproved', serialize($preApproved));
-                AddToLog("Facebook: Pre-approved Facebook user deleted: $facebook_username", 'config');
+                Log::addConfigurationLog("Facebook: Pre-approved Facebook user deleted: $facebook_username");
                 WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user "%s" deleted', $facebook_username));
             } else {
                 WT_FlashMessages::addMessage(WT_I18N::translate('The pre-approved user "%s" could not be deleted', $facebook_username));
@@ -241,7 +241,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         $code = @$_REQUEST["code"];
 
         if (!empty($_REQUEST['error'])) {
-            AddToLog('Facebook Error: ' . WT_Filter::get('error') . '. Reason: ' . WT_Filter::get('error_reason'), 'error');
+            Log::addErrorLog('Facebook Error: ' . WT_Filter::get('error') . '. Reason: ' . WT_Filter::get('error_reason'));
             if ($_REQUEST['error_reason'] == 'user_denied') {
                 $this->error_page(WT_I18N::translate('You must allow access to your Facebook account in order to login with Facebook.'));
             } else {
@@ -265,7 +265,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 . $WT_SESSION->facebook_access_token;
             $response = $this->fetch_url($graph_url);
             if ($response === FALSE) {
-                AddToLog("Facebook: Access token is no longer valid", 'error');
+                Log::addErrorLog("Facebook: Access token is no longer valid");
                 // Clear the state and try again with a new token.
                 try {
                     unset($WT_SESSION->facebook_access_token);
@@ -288,13 +288,13 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
             $response = $this->fetch_url($token_url);
             if ($response === FALSE) {
-                AddToLog("Facebook: Couldn't exchange the code for an access token", 'error');
+                Log::addErrorLog("Facebook: Couldn't exchange the code for an access token");
                 $this->error_page(WT_I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
             $params = null;
             parse_str($response, $params);
             if (empty($params['access_token'])) {
-                AddToLog("Facebook: The access token was empty", 'error');
+                Log::addErrorLog("Facebook: The access token was empty");
                 $this->error_page(WT_I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
 
@@ -323,7 +323,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                                            );
             $response = $client->request();
         } catch (Exception $e) {
-            AddToLog($e, 'error');
+            Log::addErrorLog($e);
             return false;
         }
         return $response->isError() ? false : $response->getBody();
@@ -615,7 +615,7 @@ $(document).ready(function() {
                 }
 
             } else {
-                AddToLog("Facebook: Couldn't create the user account", 'error');
+                Log::addErrorLog("Facebook: Couldn't create the user account");
                 $this->error_page('<p>' . WT_I18N::translate('Unable to create your account.  Please try again.') . '</p>' .
                                   '<div class="back"><a href="javascript:history.back()">' . WT_I18N::translate('Back') . '</a></div>');
             }

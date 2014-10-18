@@ -23,6 +23,7 @@ if (!defined('WT_WEBTREES')) {
 
 define('WT_FACEBOOK_VERSION', "v1.0-beta.6");
 
+use WT\Log;
 use WT\User;
 
 class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Module_Menu {
@@ -106,7 +107,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $user_id = WT_Filter::post('user_id', WT_REGEX_INTEGER);
             $facebook_username = $this->cleanseFacebookUsername(WT_Filter::post('facebook_username', WT_REGEX_USERNAME));
             if ($user_id && $facebook_username && !$this->get_user_id_from_facebook_username($facebook_username)) {
-                set_user_setting($user_id, self::user_setting_facebook_username, $facebook_username);
+                $user = User::find($user_id);
+                $user->setPreference(self::user_setting_facebook_username, $facebook_username);
                 if (isset($preApproved[$facebook_username])) {
                     // Delete a pre-approval for the Facebook username.
                     unset($preApproved[$facebook_username]);
@@ -120,7 +122,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         } else if (WT_Filter::post('deleteLink') && WT_Filter::checkCsrf()) {
             $user_id = WT_Filter::post('deleteLink', WT_REGEX_INTEGER);
             if ($user_id) {
-                set_user_setting($user_id, self::user_setting_facebook_username, NULL);
+                $user = User::find($user_id);
+                $user->setPreference(self::user_setting_facebook_username, NULL);
                 AddToLog("Facebook: User $user_id unlinked from a Facebook user", 'config');
                 WT_FlashMessages::addMessage(WT_I18N::translate('User unlinked'));
             } else {
@@ -462,13 +465,13 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             Zend_Session::regenerateId();
             $WT_SESSION->wt_user = $user_id;
             Zend_Session::writeClose();
-            AddToLog('Login successful ->'.$user_name.'<-', 'auth');
+            Log::addAuthenticationLog('Login successful ->'.$user_name.'<-');
             return $user_id;
         } elseif (!$is_admin && !$verified) {
-            AddToLog('Login failed ->'.$user_name.'<- not verified', 'auth');
+            Log::addAuthenticationLog('Login failed ->'.$user_name.'<- not verified');
             return -1;
         } elseif (!$is_admin && !$approved) {
-            AddToLog('Login failed ->'.$user_name.'<- not approved', 'auth');
+            Log::addAuthenticationLog('Login failed ->'.$user_name.'<- not approved');
             return -2;
         }
         throw new Exception('Login failure: Unexpected condition');
@@ -508,7 +511,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                     $message=WT_I18N::translate('This account has not been approved.  Please wait for an administrator to approve it.');
                     break;
                 default:
-                    set_user_setting($user_id, self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username));
+                    $user = User::find($user_id);
+                    $user->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username));
                     // redirect to the homepage/$url
                     header('Location: ' . WT_SCRIPT_PATH . $url);
                     return;
@@ -533,24 +537,26 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $preApproved = unserialize($this->getSetting('preapproved'));
 
             // From login.php:
-            AddToLog('User registration requested for: ' . $username, 'auth');
-            if ($user_id = create_user($username, $facebookUser->name, $facebookUser->email, $password)) {
+            Log::addAuthenticationLog('User registration requested for: ' . $username);
+            if ($user = User::create($username, $facebookUser->name, $facebookUser->email, $password)) {
                 $verifiedByAdmin = !$REQUIRE_ADMIN_AUTH_REGISTRATION || isset($preApproved[$username]);
-                set_user_setting($user_id, self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username));
-                set_user_setting($user_id, 'language',          WT_LOCALE);
-                set_user_setting($user_id, 'verified',          1);
-                set_user_setting($user_id, 'verified_by_admin', $verifiedByAdmin);
-                set_user_setting($user_id, 'reg_timestamp',     date('U'));
-                set_user_setting($user_id, 'reg_hashcode',      $hashcode);
-                set_user_setting($user_id, 'contactmethod',     'messaging2');
-                set_user_setting($user_id, 'visibleonline',     1);
-                set_user_setting($user_id, 'editaccount',       1);
-                set_user_setting($user_id, 'auto_accept',       0);
-                set_user_setting($user_id, 'canadmin',          0);
-                set_user_setting($user_id, 'sessiontime',       0);
-                set_user_setting($user_id, 'comment',
-                                 @$facebookUser->birthday . "\n " .
-                                 "https://www.facebook.com/" . $this->cleanseFacebookUsername($facebookUser->username));
+
+                $user
+                    ->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username))
+                    ->setPreference('language',          WT_LOCALE)
+                    ->setPreference('verified',          1)
+                    ->setPreference('verified_by_admin', $verifiedByAdmin)
+                    ->setPreference('reg_timestamp',     date('U'))
+                    ->setPreference('reg_hashcode',      $hashcode)
+                    ->setPreference('contactmethod',     'messaging2')
+                    ->setPreference('visibleonline',     1)
+                    ->setPreference('editaccount',       1)
+                    ->setPreference('auto_accept',       0)
+                    ->setPreference('canadmin',          0)
+                    ->setPreference('sessiontime',       0)
+                    ->setPreference('comment',
+                                    @$facebookUser->birthday . "\n " .
+                                    "https://www.facebook.com/" . $this->cleanseFacebookUsername($facebookUser->username));
 
                 // Apply pre-approval settings
                 if (isset($preApproved[$username])) {

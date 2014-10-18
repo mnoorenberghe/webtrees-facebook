@@ -28,25 +28,25 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
   <p><?php echo WT_I18N::translate('The App ID and secret can be setup at %s.', '<a href="https://developers.facebook.com/apps">https://developers.facebook.com/apps</a>'); ?></p>
   <label>
     <?php echo WT_I18N::translate('App ID:'); ?>
-    <input type="text" name="app_id" value="<?php echo get_module_setting($mod_name, 'app_id', ''); ?>" />
+    <input type="text" name="app_id" value="<?php echo $this->getSetting('app_id', ''); ?>" />
   </label>
   <label>
     <?php echo WT_I18N::translate('App Secret:'); ?>
-    <input type="text" name="app_secret" value="<?php echo get_module_setting($mod_name, 'app_secret', ''); ?>" size="40" />
+    <input type="text" name="app_secret" value="<?php echo $this->getSetting('app_secret', ''); ?>" size="40" />
   </label>
-  <?php if (!WT_Site::preference('USE_REGISTRATION_MODULE')) { ?>
+  <?php if (!WT_Site::getPreference('USE_REGISTRATION_MODULE')) { ?>
   <p><strong><?php echo WT_I18N::translate('NOTE: New user registration is disabled in Site configuration so only existing users will be able to login.');?></strong></p>
   <?php } ?>
   <p>
     <label>
-      <input type="checkbox" name="require_verified" value="1"<?php echo (get_module_setting($mod_name, 'require_verified', 1) ? 'checked="checked" ' : ''); ?> />
+      <input type="checkbox" name="require_verified" value="1"<?php echo ($this->getSetting('require_verified', 1) ? 'checked="checked" ' : ''); ?> />
       <?php echo WT_I18N::translate('Require verified Facebook accounts'); ?>
       <em>(<?php echo WT_I18N::translate('Only disable for testing'); ?>)</em>
     </label>
   </p>
   <p>
     <label>
-      <input type="checkbox" name="hide_standard_forms" value="1"<?php echo (get_module_setting($mod_name, 'hide_standard_forms', 0) ? 'checked="checked" ' : ''); ?> />
+      <input type="checkbox" name="hide_standard_forms" value="1"<?php echo ($this->getSetting('hide_standard_forms', 0) ? 'checked="checked" ' : ''); ?> />
       <?php echo WT_I18N::translate('Hide regular log-in and registration forms'); ?>
     </label>
   </p>

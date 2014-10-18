@@ -23,6 +23,8 @@ if (!defined('WT_WEBTREES')) {
 
 define('WT_FACEBOOK_VERSION', "v1.0-beta.6");
 
+use WT\User;
+
 class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Module_Menu {
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
     const user_setting_facebook_username = 'facebook_username';
@@ -448,12 +450,13 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
     private function login($user_id) {
         global $WT_SESSION;
-        $user_name = get_user_name($user_id);
+        $user = User::find($user_id);
+        $user_name = $user->getUserName();
 
         // Below copied from authenticateUser in authentication.php
-        $is_admin=get_user_setting($user_id, 'canadmin');
-        $verified=get_user_setting($user_id, 'verified');
-        $approved=get_user_setting($user_id, 'verified_by_admin');
+        $is_admin=$user->getPreference('canadmin');
+        $verified=$user->getPreference('verified');
+        $approved=$user->getPreference('verified_by_admin');
         if ($verified && $approved || $is_admin) {
             // Whenever we change our authorisation level change the session ID
             Zend_Session::regenerateId();
@@ -679,8 +682,8 @@ $(document).ready(function() {
           // Use the Facebook profile photo if there isn't an existing photo
           if (!empty($controller->record) && method_exists($controller->record, 'findHighlightedMedia')
               && !$controller->record->findHighlightedMedia()
-              && $user_id = get_user_from_gedcom_xref(WT_GED_ID, $controller->record->getXref())) {
-              if ($fbUsername = get_user_setting($user_id, self::user_setting_facebook_username)) {
+              && $user_id = get_user_from_gedcom_xref(WT_GED_ID, $controller->record->getXref())) { // TODO
+              if ($fbUsername = $user->getPreference(self::user_setting_facebook_username)) {
                   $fbPicture = 'https://graph.facebook.com/' . self::api_dir . $fbUsername . '/picture';
                   $controller->addInlineJavaScript('$(document).ready(function() {' .
                       '$("#indi_mainimage").html("<a class=\"gallery\" href=\"'.$fbPicture.'?width=' .

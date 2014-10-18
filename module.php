@@ -94,10 +94,10 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         $preApproved = unserialize(get_module_setting($mod_name, 'preapproved'));
 
         if (WT_Filter::post('saveAPI') && WT_Filter::checkCsrf()) {
-            set_module_setting($mod_name, 'app_id', WT_Filter::post('app_id', WT_REGEX_ALPHANUM));
-            set_module_setting($mod_name, 'app_secret', WT_Filter::post('app_secret', WT_REGEX_ALPHANUM));
-            set_module_setting($mod_name, 'require_verified', WT_Filter::post('require_verified', WT_REGEX_INTEGER, false));
-            set_module_setting($mod_name, 'hide_standard_forms', WT_Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
+            $this->setSetting('app_id', WT_Filter::post('app_id', WT_REGEX_ALPHANUM));
+            $this->setSetting('app_secret', WT_Filter::post('app_secret', WT_REGEX_ALPHANUM));
+            $this->setSetting('require_verified', WT_Filter::post('require_verified', WT_REGEX_INTEGER, false));
+            $this->setSetting('hide_standard_forms', WT_Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
             AddToLog("Facebook: API settings changed", 'config');
             WT_FlashMessages::addMessage(WT_I18N::translate('Settings saved'));
         } else if (WT_Filter::post('addLink') && WT_Filter::checkCsrf()) {
@@ -108,7 +108,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 if (isset($preApproved[$facebook_username])) {
                     // Delete a pre-approval for the Facebook username.
                     unset($preApproved[$facebook_username]);
-                    set_module_setting($mod_name, 'preapproved', serialize($preApproved));
+                    $this->setSetting('preapproved', serialize($preApproved));
                 }
                 AddToLog("Facebook: User $user_id linked to Facebook user $facebook_username", 'config');
                 WT_FlashMessages::addMessage(WT_I18N::translate('User %1$s linked to Facebook user %2$s', $user_id, $facebook_username));
@@ -130,7 +130,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 // Process additions
                 $row = $table['new'];
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
-                set_module_setting($mod_name, 'preapproved', serialize($preApproved));
+                $this->setSetting('preapproved', serialize($preApproved));
                 AddToLog("Facebook: Pre-approved Facebook user: $facebook_username", 'config');
                 WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user "%s" added', $facebook_username));
             }
@@ -139,14 +139,14 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             foreach($table as $facebook_username => $row) {
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
             }
-            set_module_setting($mod_name, 'preapproved', serialize($preApproved));
+            $this->setSetting('preapproved', serialize($preApproved));
             AddToLog("Facebook: Pre-approved Facebook users changed", 'config');
             WT_FlashMessages::addMessage(WT_I18N::translate('Changes to pre-approved users saved'));
         } else if (WT_Filter::post('deletePreapproved') && WT_Filter::checkCsrf()) {
             $facebook_username = trim(WT_Filter::post('deletePreapproved', WT_REGEX_USERNAME));
             if ($facebook_username && isset($preApproved[$facebook_username])) {
                 unset($preApproved[$facebook_username]);
-                set_module_setting($mod_name, 'preapproved', serialize($preApproved));
+                $this->setSetting('preapproved', serialize($preApproved));
                 AddToLog("Facebook: Pre-approved Facebook user deleted: $facebook_username", 'config');
                 WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user "%s" deleted', $facebook_username));
             } else {
@@ -200,9 +200,9 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
     private function isSetup() {
         $mod_name = $this->getName();
-        $app_id = get_module_setting($mod_name, 'app_id');
-        $app_secret = get_module_setting($mod_name, 'app_secret');
-        $this->hideStandardForms = get_module_setting($mod_name, 'hide_standard_forms', false);
+        $app_id = $this->getSetting('app_id');
+        $app_secret = $this->getSetting('app_secret');
+        $this->hideStandardForms = $this->getSetting('hide_standard_forms', false);
 
         return !empty($app_id) && !empty($app_secret);
     }
@@ -224,8 +224,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             exit;
         }
 
-        $app_id = get_module_setting($this->getName(), 'app_id');
-        $app_secret = get_module_setting($this->getName(), 'app_secret');
+        $app_id = $this->getSetting('app_id');
+        $app_secret = $this->getSetting('app_secret');
         $connect_url = $this->getConnectURL($url);
 
         if (!$app_id || !$app_secret) {
@@ -377,7 +377,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');",
                                          WT_Controller_Page::JS_PRIORITY_LOW);
 
-        $preApproved = unserialize(get_module_setting($this->getName(), 'preapproved'));
+        $preApproved = unserialize($this->getSetting('preapproved'));
 
         if (WT_Filter::postArray('preApproved') && WT_Filter::checkCsrf()) {
             $roleRows = WT_Filter::postArray('preApproved');
@@ -386,7 +386,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 $facebook_username = $this->cleanseFacebookUsername($facebook_username);
                 $this->appendPreapproved($preApproved, $facebook_username, $roleRows);
             }
-            set_module_setting($this->getName(), 'preapproved', serialize($preApproved));
+            $this->setSetting('preapproved', serialize($preApproved));
             WT_FlashMessages::addMessage(WT_I18N::translate('Users successfully imported from Facebook'));
             header("Location: module.php?mod=" . $this->getName() . "&mod_action=admin");
             exit;
@@ -481,7 +481,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 	global $WT_SESSION;
         $REQUIRE_ADMIN_AUTH_REGISTRATION = WT_Site::preference('REQUIRE_ADMIN_AUTH_REGISTRATION');
 
-        if (get_module_setting($this->getName(), 'require_verified', 1) && empty($facebookUser->verified)) {
+        if ($this->getSetting('require_verified', 1) && empty($facebookUser->verified)) {
             $this->error_page(WT_I18N::translate('Only verified Facebook accounts are authorized. Please verify your account on Facebook and then try again'));
         }
 
@@ -527,7 +527,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             // Generate a random password since the user shouldn't need it and can always reset it.
             $password = md5(uniqid(rand(), TRUE));
             $hashcode = md5(uniqid(rand(), true));
-            $preApproved = unserialize(get_module_setting($this->getName(), 'preapproved'));
+            $preApproved = unserialize($this->getSetting('preapproved'));
 
             // From login.php:
             AddToLog('User registration requested for: ' . $username, 'auth');
@@ -566,7 +566,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                     }
                     // Remove the pre-approval record
                     unset($preApproved[$username]);
-                    set_module_setting($this->getName(), 'preapproved', serialize($preApproved));
+                    $this->setSetting('preapproved', serialize($preApproved));
                 }
 
                 // We need jQuery below

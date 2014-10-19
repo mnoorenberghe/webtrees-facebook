@@ -124,6 +124,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $user_id = WT_Filter::post('deleteLink', WT_REGEX_INTEGER);
             if ($user_id) {
                 $user = User::find($user_id);
+                // TODO: doesn't work in WT 1.6: https://github.com/fisharebest/webtrees/pull/278
                 $user->setPreference(self::user_setting_facebook_username, NULL);
                 Log::addConfigurationLog("Facebook: User $user_id unlinked from a Facebook user");
                 WT_FlashMessages::addMessage(WT_I18N::translate('User unlinked'));

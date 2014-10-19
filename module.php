@@ -502,7 +502,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         }
         $user_id = $this->get_user_id_from_facebook_username($facebookUser->username);
         if (!$user_id) {
-            $user_id = get_user_by_email($facebookUser->email);
+            $user = User::findByIdentifier($facebookUser->email);
+            $user_id = $user->getUserId();
         }
 
         if ($user_id) { // This is an existing user so log them in if they are approved

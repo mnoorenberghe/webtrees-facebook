@@ -671,7 +671,7 @@ $(document).ready(function() {
     public function getMenu() {
         // We don't actually have a menu - this is just a convenient "hook" to execute
         // code at the right time during page execution
-        global $controller, $THUMBNAIL_WIDTH;
+        global $controller, $THUMBNAIL_WIDTH, $WT_TREE;
 
         if (!$this->isSetup()) {
             return null;
@@ -693,7 +693,7 @@ $(document).ready(function() {
           // Use the Facebook profile photo if there isn't an existing photo
           if (!empty($controller->record) && method_exists($controller->record, 'findHighlightedMedia')
               && !$controller->record->findHighlightedMedia()
-              && $user_id = get_user_from_gedcom_xref(WT_GED_ID, $controller->record->getXref())) { // TODO
+              && $user = User::findByGenealogyRecord($WT_TREE, $controller->record)) {
               if ($fbUsername = $user->getPreference(self::user_setting_facebook_username)) {
                   $fbPicture = 'https://graph.facebook.com/' . self::api_dir . $fbUsername . '/picture';
                   $controller->addInlineJavaScript('$(document).ready(function() {' .

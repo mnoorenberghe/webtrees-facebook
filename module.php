@@ -31,7 +31,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
     const user_setting_facebook_username = 'facebook_username';
     const profile_photo_large_width = 1024;
-    const api_dir = "v1.0/";
+    const api_dir = "v1.0/"; // TODO: make an admin preference so new installs can use this module.
 
     private $hideStandardForms = false;
 

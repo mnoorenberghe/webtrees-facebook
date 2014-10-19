@@ -533,7 +533,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
             // check if the username is already in use
             $username = $this->cleanseFacebookUsername($facebookUser->username);
-            if (get_user_id($username)) {
+            if (User::findByIdentifier($username)) {
                 // fallback to email as username since we checked above that a user with the email didn't exist.
                 $username = $facebookUser->email;
             }

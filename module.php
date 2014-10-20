@@ -580,7 +580,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                             if (empty($userGedcomSettings[$userPref])) {
                                 continue;
                             }
-                            $tree->userPreference($user_id, $userPref, $userGedcomSettings[$userPref]);
+                            $tree->setUserPreference($user, $userPref, $userGedcomSettings[$userPref]);
                         }
                     }
                     // Remove the pre-approval record

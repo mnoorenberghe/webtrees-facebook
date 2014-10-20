@@ -501,7 +501,9 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         $user_id = $this->get_user_id_from_facebook_username($facebookUser->username);
         if (!$user_id) {
             $user = User::findByIdentifier($facebookUser->email);
-            $user_id = $user->getUserId();
+            if ($user) {
+                $user_id = $user->getUserId();
+            }
         }
 
         if ($user_id) { // This is an existing user so log them in if they are approved
@@ -531,9 +533,12 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
             // check if the username is already in use
             $username = $this->cleanseFacebookUsername($facebookUser->username);
-            if (User::findByIdentifier($username)) {
+            $wt_username = substr($username, 0, 32); // Truncate the username to 32 characters to match the DB.
+
+            if (User::findByIdentifier($wt_username)) {
                 // fallback to email as username since we checked above that a user with the email didn't exist.
-                $username = $facebookUser->email;
+                $wt_username = $facebookUser->email;
+                $wt_username = substr($wt_username, 0, 32); // Truncate the username to 32 characters to match the DB.
             }
 
             // Generate a random password since the user shouldn't need it and can always reset it.
@@ -542,8 +547,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $preApproved = unserialize($this->getSetting('preapproved'));
 
             // From login.php:
-            Log::addAuthenticationLog('User registration requested for: ' . $username);
-            if ($user = User::create($username, $facebookUser->name, $facebookUser->email, $password)) {
+            Log::addAuthenticationLog('User registration requested for: ' . $wt_username);
+            if ($user = User::create($wt_username, $facebookUser->name, $facebookUser->email, $password)) {
                 $verifiedByAdmin = !$REQUIRE_ADMIN_AUTH_REGISTRATION || isset($preApproved[$username]);
 
                 $user
@@ -592,7 +597,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
                 echo '<form id="verify-form" name="verify-form" method="post" action="', WT_LOGIN_URL, '" class="ui-autocomplete-loading" style="width:16px;height:16px;padding:0">';
                 echo $this->hidden_input("action", "verify_hash");
-                echo $this->hidden_input("user_name", $username);
+                echo $this->hidden_input("user_name", $wt_username);
                 echo $this->hidden_input("user_password", $password);
                 echo $this->hidden_input("user_hashcode", $hashcode);
                 echo WT_Filter::getCsrf();

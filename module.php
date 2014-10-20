@@ -122,8 +122,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             $user_id = WT_Filter::post('deleteLink', WT_REGEX_INTEGER);
             if ($user_id) {
                 $user = User::find($user_id);
-                // TODO: doesn't work in WT 1.6: https://github.com/fisharebest/webtrees/pull/278
-                $user->setPreference(self::user_setting_facebook_username, NULL);
+                $user->deletePreference(self::user_setting_facebook_username);
                 Log::addConfigurationLog("Facebook: User $user_id unlinked from a Facebook user");
                 WT_FlashMessages::addMessage(WT_I18N::translate('User unlinked'));
             } else {
@@ -557,16 +556,16 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 $user
                     ->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username))
                     ->setPreference('language',          WT_LOCALE)
-                    ->setPreference('verified',          1)
-                    ->setPreference('verified_by_admin', $verifiedByAdmin)
+                    ->setPreference('verified',          '1')
+                    ->setPreference('verified_by_admin', $verifiedByAdmin ? '1' : '0')
                     ->setPreference('reg_timestamp',     date('U'))
                     ->setPreference('reg_hashcode',      $hashcode)
                     ->setPreference('contactmethod',     'messaging2')
-                    ->setPreference('visibleonline',     1)
-                    ->setPreference('editaccount',       1)
-                    ->setPreference('auto_accept',       0)
-                    ->setPreference('canadmin',          0)
-                    ->setPreference('sessiontime',       0)
+                    ->setPreference('visibleonline',     '1')
+                    ->setPreference('editaccount',       '1')
+                    ->setPreference('auto_accept',       '0')
+                    ->setPreference('canadmin',          '0')
+                    ->setPreference('sessiontime',       '0')
                     ->setPreference('comment',
                                     @$facebookUser->birthday . "\n " .
                                     "https://www.facebook.com/" . $this->cleanseFacebookUsername($facebookUser->username));

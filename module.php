@@ -404,7 +404,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             . $WT_SESSION->facebook_access_token;
         $friendsResponse = $this->fetch_url($graph_url);
         if ($friendsResponse === FALSE) {
-            $this->error_page(WT_I18N::translate("Could not fetch your friends from Facebook."));
+            $this->error_page(WT_I18N::translate("Could not fetch your friends from Facebook. Note that this feature won't work for Facebook Apps created after 2014-04-30 due to a Facebook policy change."));
         }
 
         $controller
@@ -464,7 +464,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             Auth::login($user);
             Log::addAuthenticationLog('Login: ' . Auth::user()->getUserName() . '/' . Auth::user()->getRealName());
 
-            $WT_SESSION->timediff  = 0; // TODO
+            $WT_SESSION->timediff  = 0; // TODO: #18
             $WT_SESSION->locale    = Auth::user()->getPreference('language');
             $WT_SESSION->theme_dir = Auth::user()->getPreference('theme');
 

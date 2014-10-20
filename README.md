@@ -5,7 +5,7 @@ Facebook integration for webtrees genealogy software.
 
 All of the authentication is done on the server-side so no external JavaScript files are needed.
 
-* webtrees 1.5.0 or higher is required.
+* webtrees 1.5.0 or higher is required up to beta 5. webtrees 1.6.0 or higher is required for beta 6+.
 * 'Allow visitors to request account registration' must be enabled in Site Configuration if you want
   to allow new users via Facebook.
 
@@ -31,5 +31,6 @@ All of the authentication is done on the server-side so no external JavaScript f
   approval is required for new accounts, the administrator can delete the new account and link the
   existing account to the user's Facebook account. The administrator can also link existing users to
   their Facebook accounts in advance (where possible) to avoid this situation.
+* Pre-approval of users won't work for Facebook Apps created after 2014-04-30. See [#16](https://github.com/mnoorenberghe/webtrees-facebook/issues/16).
 * There is no comment field during registration with a Facebook account.
 * The login button will not appear if all trees have "Require visitor authentication".

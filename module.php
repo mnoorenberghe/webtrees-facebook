@@ -691,7 +691,7 @@ $(document).ready(function() {
           $controller->addInlineJavaScript("
             var FACEBOOK_LOGIN_TEXT = '" . addslashes(WT_I18N::translate('Login with Facebook')) . "';
             $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');" .
-              ($this->hideStandardForms ? '$(document).ready(function() {$("#login-form[name=\'login-form\'], #register-form").hide();})' : ""),
+              ($this->hideStandardForms ? '$(document).ready(function() {$("#login-form[name=\'login-form\'], #register-form").hide();});' : ""),
             WT_Controller_Page::JS_PRIORITY_NORMAL);
         //}
 
@@ -706,7 +706,7 @@ $(document).ready(function() {
                       self::profile_photo_large_width.'\" data-obje-url=\"'.$fbPicture.'?type=large\">' .
                       '<img width=\"'.$THUMBNAIL_WIDTH.'\" src=\"'.$fbPicture.'?width='.$THUMBNAIL_WIDTH.'\"/>' .
                       '</a>");' .
-                 '})');
+                 '});');
               }
           }
 

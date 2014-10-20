@@ -500,6 +500,9 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
         }
         $user_id = $this->get_user_id_from_facebook_username($facebookUser->username);
         if (!$user_id) {
+            if (!isset($facebookUser->email)) {
+                $this->error_page(WT_I18N::translate('You must grant access to your email address via Facebook in order to use this website. Please uninstall the application on Facebook and try again.'));
+            }
             $user = User::findByIdentifier($facebookUser->email);
             if ($user) {
                 $user_id = $user->getUserId();

@@ -46,7 +46,6 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 Zend_Registry::get('Zend_Translate')->addTranslation($tr);
             }
         }
-        set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__ . "/library");
     }
 
     // Implement WT_Module_Config

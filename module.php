@@ -466,6 +466,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 
             $WT_SESSION->locale    = Auth::user()->getPreference('language');
             $WT_SESSION->theme_dir = Auth::user()->getPreference('theme');
+            $WT_SESSION->activity_time = WT_TIMESTAMP;
+            $user->setPreference('sessiontime', WT_TIMESTAMP);
 
             Zend_Session::writeClose();
 
@@ -565,7 +567,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                     ->setPreference('editaccount',       '1')
                     ->setPreference('auto_accept',       '0')
                     ->setPreference('canadmin',          '0')
-                    ->setPreference('sessiontime',       '0')
+                    ->setPreference('sessiontime',       $verifiedByAdmin ? WT_TIMESTAMP : '0')
                     ->setPreference('comment',
                                     @$facebookUser->birthday . "\n " .
                                     "https://www.facebook.com/" . $this->cleanseFacebookUsername($facebookUser->username));

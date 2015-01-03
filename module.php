@@ -250,6 +250,8 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 echo WT_I18N::translate('This form has expired.  Try again.');
                 return;
             }
+
+            $WT_SESSION->timediff = WT_Filter::postInteger('timediff', -43200, 50400, 0); // Same range as date('Z')
             // FB Login flow has not begun so redirect to login dialog.
             $WT_SESSION->facebook_state = md5(uniqid(rand(), TRUE)); // CSRF protection
             $dialog_url = "https://www.facebook.com/dialog/oauth?client_id="
@@ -462,7 +464,6 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
             Auth::login($user);
             Log::addAuthenticationLog('Login: ' . Auth::user()->getUserName() . '/' . Auth::user()->getRealName());
 
-            $WT_SESSION->timediff  = 0; // TODO: #18
             $WT_SESSION->locale    = Auth::user()->getPreference('language');
             $WT_SESSION->theme_dir = Auth::user()->getPreference('theme');
 

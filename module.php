@@ -21,7 +21,7 @@ if (!defined('WT_WEBTREES')) {
     exit;
 }
 
-define('WT_FACEBOOK_VERSION', "v1.0-beta.6");
+define('WT_FACEBOOK_VERSION', "v1.0-beta.7");
 
 use WT\Auth;
 use WT\Log;

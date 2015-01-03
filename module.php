@@ -258,7 +258,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 . $app_id . "&redirect_uri=" . urlencode($connect_url) . "&state="
                 . $WT_SESSION->facebook_state . "&scope=" . self::scope;
             Zend_Session::writeClose();
-            echo("<script> top.location.href='" . $dialog_url . "'</script>");
+            echo("<script> window.location.href='" . $dialog_url . "'</script>");
         } else if (!empty($WT_SESSION->facebook_access_token)) {
             // User has already authorized the app and we have a token so get their info.
             $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?access_token="
@@ -610,13 +610,13 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
 function verify_hash_success() {
   // now the account is approved but not logged in. Now actually login for the user.
   if (!parseInt(WT_USER_ID, 10)) {
-    window.top.location = "' . $this->getConnectURL($url) . '";
+    window.location = "' . $this->getConnectURL($url) . '";
   }
 }
 
 function verify_hash_failure() {
   alert("' . WT_I18N::translate("There was an error verifying your account. Contact the site administrator if you are unable to access the site.")  . '");
-  window.top.location = "' . WT_SCRIPT_PATH . '";
+  window.location = "' . WT_SCRIPT_PATH . '";
 }
 $(document).ready(function() {
   $.post("' . WT_LOGIN_URL . '", $("#verify-form").serialize(), verify_hash_success).fail(verify_hash_failure);

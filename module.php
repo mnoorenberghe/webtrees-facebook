@@ -489,7 +489,6 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
      * @param string $url          (optional) URL to redirect to afterwards.
      */
     private function login_or_register(&$facebookUser, $url='') {
-	global $WT_SESSION;
         $REQUIRE_ADMIN_AUTH_REGISTRATION = WT_Site::getPreference('REQUIRE_ADMIN_AUTH_REGISTRATION');
 
         if ($this->getSetting('require_verified', 1) && empty($facebookUser->verified)) {
@@ -575,16 +574,22 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                 // Apply pre-approval settings
                 if (isset($preApproved[$username])) {
                     $userSettings = $preApproved[$username];
+
                     foreach ($userSettings as $gedcom => $userGedcomSettings) {
-                        $tree = WT_Tree::get($gedcom);
-                        if (!$tree) {
-                            continue;
-                        }
                         foreach (array('gedcomid', 'rootid', 'canedit') as $userPref) {
                             if (empty($userGedcomSettings[$userPref])) {
                                 continue;
                             }
-                            $tree->setUserPreference($user, $userPref, $userGedcomSettings[$userPref]);
+
+                            // Use a direct DB query instead of $tree->setUserPreference since we
+                            // can't get a reference to the WT_Tree since it checks permissions but
+                            // we are trying to give the permissions.
+                            WT_DB::prepare(
+                                           "REPLACE INTO `##user_gedcom_setting` (user_id, gedcom_id, setting_name, setting_value) VALUES (?, ?, ?, LEFT(?, 255))"
+                                           )->execute(array($user->getUserId(),
+                                                            $gedcom,
+                                                            $userPref,
+                                                            $userGedcomSettings[$userPref]));
                         }
                     }
                     // Remove the pre-approval record
@@ -611,9 +616,7 @@ class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Modul
                     $controller->addInlineJavaScript('
 function verify_hash_success() {
   // now the account is approved but not logged in. Now actually login for the user.
-  if (!parseInt(WT_USER_ID, 10)) {
-    window.location = "' . $this->getConnectURL($url) . '";
-  }
+  window.location = "' . $this->getConnectURL($url) . '";
 }
 
 function verify_hash_failure() {

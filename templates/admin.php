@@ -22,6 +22,12 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
 
 <link rel="stylesheet" href="<?php echo WT_MODULES_DIR . $this->getName(); ?>/facebook.css?v=<?php echo  WT_FACEBOOK_VERSION; ?>" />
 <h3><?php echo $this->getTitle(); ?></h3>
+<div>
+  <strong><?php echo WT_I18N::translate('Version: ')?></strong><?php echo WT_FACEBOOK_VERSION; ?>
+  <span id="updateBanner" class="ui-state-highlight"></span>
+</div>
+
+<hr/>
 <h4><?php echo WT_I18N::translate('Facebook API'); ?></h4>
 <form method="post" action="">
   <?php echo WT_Filter::getCsrf(); ?>
@@ -182,4 +188,19 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . WT_I18N::trans
 function paste_id(value) {
   pastefield.value=value;
 }
+
+function update_check() {
+    $.ajax("<?php echo WT_FACEBOOK_UPDATE_CHECK_URL; ?>", {
+        headers: { "Accept": "application/vnd.github.v3.raw+json" },
+        dataType: "text"
+    }).done(function(data) {
+        var versions = JSON.parse(data);
+        if (versions.latest_version > "<?php echo WT_FACEBOOK_VERSION; ?>") {
+            var updateText = "<?php echo WT_Filter::escapeJs(WT_I18N::translate('An update to this module is available: ')); ?>";
+           $("#updateBanner").html(updateText + "<a href='" + versions.website + "'>" + versions.latest_version + " (" + versions.latest_release_date + ")</a>");
+        }
+    });
+}
+
+window.addEventListener("load", update_check);
 </script>

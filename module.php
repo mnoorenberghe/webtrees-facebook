@@ -22,6 +22,7 @@ if (!defined('WT_WEBTREES')) {
 }
 
 define('WT_FACEBOOK_VERSION', "v1.0-beta.7");
+define('WT_FACEBOOK_UPDATE_CHECK_URL', "https://api.github.com/repos/mnoorenberghe/webtrees-facebook/contents/versions.json?ref=gh-pages");
 
 use WT\Auth;
 use WT\Log;

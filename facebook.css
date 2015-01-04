@@ -19,6 +19,15 @@
 
 /* administration pages */
 
+#admin_content #updateBanner {
+  padding: 2px;
+  transition: opacity 1s;
+}
+
+#admin_content #updateBanner:empty {
+  opacity: 0;
+}
+
 #admin_content td {
     vertical-align: middle;
 }

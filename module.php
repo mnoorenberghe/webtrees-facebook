@@ -284,7 +284,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 try {
                     Session::forget('facebook_access_token');
                     Session::forget('facebook_state');
-                } catch (Exception $e) { echo "oh snap"; }
+                } catch (Exception $e) { }
 
                 header("Location: " . $this->getConnectURL($url));
                 exit;
@@ -643,7 +643,7 @@ $(document).ready(function() {
         try {
             Session::forget('facebook_access_token');
             Session::forget('facebook_state');
-        } catch (Exception $e) { echo 'huh what'; }
+        } catch (Exception $e) { }
 
         $controller = new PageController();
         $controller

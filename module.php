@@ -27,6 +27,7 @@ define('WT_FACEBOOK_UPDATE_CHECK_URL', "https://api.github.com/repos/mnoorenberg
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Controller\PageController;
 use Fisharebest\Webtrees\Database;
+use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\Site;
@@ -63,12 +64,12 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
     // Extend WT_Module
     public function getTitle() {
-        return /* I18N: Name of a module */ WT_I18N::translate('Facebook');
+        return /* I18N: Name of a module */ I18N::translate('Facebook');
     }
 
     // Extend WT_Module
     public function getDescription() {
-        return /* I18N: Description of the "Facebook" module */ WT_I18N::translate('Allow users to login with Facebook.');
+        return /* I18N: Description of the "Facebook" module */ I18N::translate('Allow users to login with Facebook.');
     }
 
     // Extend WT_Module
@@ -90,11 +91,11 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
     private function get_edit_options() {
         return array( // from admin_users.php
-                     'none'  => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Visitor'),
-                     'access'=> /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Member'),
-                     'edit'  => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Editor'),
-                     'accept'=> /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Moderator'),
-                     'admin' => /* I18N: Listbox entry; name of a role */ WT_I18N::translate('Manager')
+                     'none'  => /* I18N: Listbox entry; name of a role */ I18N::translate('Visitor'),
+                     'access'=> /* I18N: Listbox entry; name of a role */ I18N::translate('Member'),
+                     'edit'  => /* I18N: Listbox entry; name of a role */ I18N::translate('Editor'),
+                     'accept'=> /* I18N: Listbox entry; name of a role */ I18N::translate('Moderator'),
+                     'admin' => /* I18N: Listbox entry; name of a role */ I18N::translate('Manager')
                       );
     }
 
@@ -108,7 +109,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             $this->setSetting('require_verified', Filter::post('require_verified', WT_REGEX_INTEGER, false));
             $this->setSetting('hide_standard_forms', Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
             Log::addConfigurationLog("Facebook: API settings changed");
-            WT_FlashMessages::addMessage(WT_I18N::translate('Settings saved'));
+            WT_FlashMessages::addMessage(I18N::translate('Settings saved'));
         } else if (Filter::post('addLink') && Filter::checkCsrf()) {
             $user_id = Filter::post('user_id', WT_REGEX_INTEGER);
             $facebook_username = $this->cleanseFacebookUsername(Filter::post('facebook_username', WT_REGEX_USERNAME));
@@ -121,9 +122,9 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                     $this->setSetting('preapproved', serialize($preApproved));
                 }
                 Log::addConfigurationLog("Facebook: User $user_id linked to Facebook user $facebook_username");
-                WT_FlashMessages::addMessage(WT_I18N::translate('User %1$s linked to Facebook user %2$s', $user_id, $facebook_username));
+                WT_FlashMessages::addMessage(I18N::translate('User %1$s linked to Facebook user %2$s', $user_id, $facebook_username));
             } else {
-                WT_FlashMessages::addMessage(WT_I18N::translate('The user could not be linked'));
+                WT_FlashMessages::addMessage(I18N::translate('The user could not be linked'));
             }
         } else if (Filter::post('deleteLink') && Filter::checkCsrf()) {
             $user_id = Filter::post('deleteLink', WT_REGEX_INTEGER);
@@ -131,9 +132,9 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 $user = User::find($user_id);
                 $user->deletePreference(self::user_setting_facebook_username);
                 Log::addConfigurationLog("Facebook: User $user_id unlinked from a Facebook user");
-                WT_FlashMessages::addMessage(WT_I18N::translate('User unlinked'));
+                WT_FlashMessages::addMessage(I18N::translate('User unlinked'));
             } else {
-                WT_FlashMessages::addMessage(WT_I18N::translate('The link could not be deleted'));
+                WT_FlashMessages::addMessage(I18N::translate('The link could not be deleted'));
             }
         } else if (Filter::post('savePreapproved') && Filter::checkCsrf()) {
             $table = Filter::post('preApproved');
@@ -143,7 +144,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
                 $this->setSetting('preapproved', serialize($preApproved));
                 Log::addConfigurationLog("Facebook: Pre-approved Facebook user: $facebook_username");
-                WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user "%s" added', $facebook_username));
+                WT_FlashMessages::addMessage(I18N::translate('Pre-approved user "%s" added', $facebook_username));
             }
             unset($table['new']);
             // Process changes
@@ -152,16 +153,16 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             }
             $this->setSetting('preapproved', serialize($preApproved));
             Log::addConfigurationLog("Facebook: Pre-approved Facebook users changed");
-            WT_FlashMessages::addMessage(WT_I18N::translate('Changes to pre-approved users saved'));
+            WT_FlashMessages::addMessage(I18N::translate('Changes to pre-approved users saved'));
         } else if (Filter::post('deletePreapproved') && Filter::checkCsrf()) {
             $facebook_username = trim(Filter::post('deletePreapproved', WT_REGEX_USERNAME));
             if ($facebook_username && isset($preApproved[$facebook_username])) {
                 unset($preApproved[$facebook_username]);
                 $this->setSetting('preapproved', serialize($preApproved));
                 Log::addConfigurationLog("Facebook: Pre-approved Facebook user deleted: $facebook_username");
-                WT_FlashMessages::addMessage(WT_I18N::translate('Pre-approved user "%s" deleted', $facebook_username));
+                WT_FlashMessages::addMessage(I18N::translate('Pre-approved user "%s" deleted', $facebook_username));
             } else {
-                WT_FlashMessages::addMessage(WT_I18N::translate('The pre-approved user "%s" could not be deleted', $facebook_username));
+                WT_FlashMessages::addMessage(I18N::translate('The pre-approved user "%s" could not be deleted', $facebook_username));
             }
         }
 
@@ -191,11 +192,11 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     private function appendPreapproved(&$preApproved, $facebook_username, $row) {
         $facebook_username = $this->cleanseFacebookUsername($facebook_username);
         if (!$facebook_username) {
-            WT_FlashMessages::addMessage(WT_I18N::translate('Missing Facebook username'));
+            WT_FlashMessages::addMessage(I18N::translate('Missing Facebook username'));
             return;
         }
         if ($this->get_user_id_from_facebook_username($facebook_username)) {
-            WT_FlashMessages::addMessage(WT_I18N::translate('User is already registered'));
+            WT_FlashMessages::addMessage(I18N::translate('User is already registered'));
             return;
         }
 
@@ -240,7 +241,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         $connect_url = $this->getConnectURL($url);
 
         if (!$app_id || !$app_secret) {
-            $this->error_page(WT_I18N::translate('Facebook logins have not been setup by the administrator.'));
+            $this->error_page(I18N::translate('Facebook logins have not been setup by the administrator.'));
             return;
         }
 
@@ -249,13 +250,13 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         if (!empty($_REQUEST['error'])) {
             Log::addErrorLog('Facebook Error: ' . Filter::get('error') . '. Reason: ' . Filter::get('error_reason'));
             if ($_REQUEST['error_reason'] == 'user_denied') {
-                $this->error_page(WT_I18N::translate('You must allow access to your Facebook account in order to login with Facebook.'));
+                $this->error_page(I18N::translate('You must allow access to your Facebook account in order to login with Facebook.'));
             } else {
-                $this->error_page(WT_I18N::translate('An error occurred trying to log you in with Facebook.'));
+                $this->error_page(I18N::translate('An error occurred trying to log you in with Facebook.'));
             }
         } else if (empty($code) && empty($WT_SESSION->facebook_access_token)) {
             if (!Filter::checkCsrf()) {
-                echo WT_I18N::translate('This form has expired.  Try again.');
+                echo I18N::translate('This form has expired.  Try again.');
                 return;
             }
 
@@ -297,13 +298,13 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             $response = $this->fetch_url($token_url);
             if ($response === FALSE) {
                 Log::addErrorLog("Facebook: Couldn't exchange the code for an access token");
-                $this->error_page(WT_I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
+                $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
             $params = null;
             parse_str($response, $params);
             if (empty($params['access_token'])) {
                 Log::addErrorLog("Facebook: The access token was empty");
-                $this->error_page(WT_I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
+                $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
 
             $WT_SESSION->facebook_access_token = $params['access_token'];
@@ -312,12 +313,12 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 . $WT_SESSION->facebook_access_token;
             $meResponse = $this->fetch_url($graph_url);
             if ($meResponse === FALSE) {
-                $this->error_page(WT_I18N::translate("Could not fetch your information from Facebook. Please try again."));
+                $this->error_page(I18N::translate("Could not fetch your information from Facebook. Please try again."));
             }
             $user = json_decode($meResponse);
             $this->login_or_register($user, $url);
         } else {
-            $this->error_page(WT_I18N::translate("The state does not match. You may been tricked to load this page."));
+            $this->error_page(I18N::translate("The state does not match. You may been tricked to load this page."));
         }
     }
 
@@ -400,19 +401,19 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 $this->appendPreapproved($preApproved, $facebook_username, $roleRows);
             }
             $this->setSetting('preapproved', serialize($preApproved));
-            WT_FlashMessages::addMessage(WT_I18N::translate('Users successfully imported from Facebook'));
+            WT_FlashMessages::addMessage(I18N::translate('Users successfully imported from Facebook'));
             header("Location: module.php?mod=" . $this->getName() . "&mod_action=admin");
             exit;
         }
 
         if (empty($WT_SESSION->facebook_access_token)) {
-            $this->error_page(WT_I18N::translate("You must <a href='%s'>login to the site via Facebook</a> in order to import friends from Facebook", "index.php?logout=1"));
+            $this->error_page(I18N::translate("You must <a href='%s'>login to the site via Facebook</a> in order to import friends from Facebook", "index.php?logout=1"));
         }
         $graph_url = "https://graph.facebook.com/" . self::api_dir . "me/friends?fields=first_name,last_name,name,username&access_token="
             . $WT_SESSION->facebook_access_token;
         $friendsResponse = $this->fetch_url($graph_url);
         if ($friendsResponse === FALSE) {
-            $this->error_page(WT_I18N::translate("Could not fetch your friends from Facebook. Note that this feature won't work for Facebook Apps created after 2014-04-30 due to a Facebook policy change."));
+            $this->error_page(I18N::translate("Could not fetch your friends from Facebook. Note that this feature won't work for Facebook Apps created after 2014-04-30 due to a Facebook policy change."));
         }
 
         $controller
@@ -422,7 +423,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
         $friends = json_decode($friendsResponse);
         if (empty($friends->data)) {
-            $this->error_page(WT_I18N::translate("No friend data"));
+            $this->error_page(I18N::translate("No friend data"));
             return;
         }
 
@@ -437,7 +438,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         foreach (WT_Tree::getAll() as $tree) {
             $class = ($index++ % 2 ? 'odd' : 'even');
             echo "<label>" . $tree->tree_name_html . " - " .
-                WT_I18N::translate('Role') . help_link('role') . ": " .
+                I18N::translate('Role') . help_link('role') . ": " .
                 select_edit_control('preApproved['.$tree->tree_id.'][canedit]',
                                     $this->get_edit_options(), NULL, NULL) .
                 "</label>";
@@ -500,7 +501,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         $REQUIRE_ADMIN_AUTH_REGISTRATION = Site::getPreference('REQUIRE_ADMIN_AUTH_REGISTRATION');
 
         if ($this->getSetting('require_verified', 1) && empty($facebookUser->verified)) {
-            $this->error_page(WT_I18N::translate('Only verified Facebook accounts are authorized. Please verify your account on Facebook and then try again'));
+            $this->error_page(I18N::translate('Only verified Facebook accounts are authorized. Please verify your account on Facebook and then try again'));
         }
 
         if (empty($facebookUser->username)) {
@@ -509,7 +510,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         $user_id = $this->get_user_id_from_facebook_username($facebookUser->username);
         if (!$user_id) {
             if (!isset($facebookUser->email)) {
-                $this->error_page(WT_I18N::translate('You must grant access to your email address via Facebook in order to use this website. Please uninstall the application on Facebook and try again.'));
+                $this->error_page(I18N::translate('You must grant access to your email address via Facebook in order to use this website. Please uninstall the application on Facebook and try again.'));
             }
             $user = User::findByIdentifier($facebookUser->email);
             if ($user) {
@@ -523,10 +524,10 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             $message = '';
             switch ($login_result) {
 		case -1: // not validated
-		    $message=WT_I18N::translate('This account has not been verified.  Please check your email for a verification message.');
+		    $message=I18N::translate('This account has not been verified.  Please check your email for a verification message.');
                     break;
 		case -2: // not approved
-                    $message=WT_I18N::translate('This account has not been approved.  Please wait for an administrator to approve it.');
+                    $message=I18N::translate('This account has not been approved.  Please wait for an administrator to approve it.');
                     break;
                 default:
                     $user = User::find($user_id);
@@ -539,7 +540,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         } else { // This is a new Facebook user who may or may not already have a manual account
 
             if (!Site::getPreference('USE_REGISTRATION_MODULE')) {
-                $this->error_page('<p>' . WT_I18N::translate('The administrator has disabled registrations.') . '</p>');
+                $this->error_page('<p>' . I18N::translate('The administrator has disabled registrations.') . '</p>');
             }
 
             // check if the username is already in use
@@ -627,7 +628,7 @@ function verify_hash_success() {
 }
 
 function verify_hash_failure() {
-  alert("' . WT_I18N::translate("There was an error verifying your account. Contact the site administrator if you are unable to access the site.")  . '");
+  alert("' . I18N::translate("There was an error verifying your account. Contact the site administrator if you are unable to access the site.")  . '");
   window.location = "' . WT_SCRIPT_PATH . '";
 }
 $(document).ready(function() {
@@ -640,8 +641,8 @@ $(document).ready(function() {
 
             } else {
                 Log::addErrorLog("Facebook: Couldn't create the user account");
-                $this->error_page('<p>' . WT_I18N::translate('Unable to create your account.  Please try again.') . '</p>' .
-                                  '<div class="back"><a href="javascript:history.back()">' . WT_I18N::translate('Back') . '</a></div>');
+                $this->error_page('<p>' . I18N::translate('Unable to create your account.  Please try again.') . '</p>' .
+                                  '<div class="back"><a href="javascript:history.back()">' . I18N::translate('Back') . '</a></div>');
             }
         }
     }
@@ -671,7 +672,7 @@ $(document).ready(function() {
     private function print_findindi_link($element_id, $indiname='', $gedcomTitle=WT_GEDURL) {
 	return '<a href="#" tabindex="-1"
                    onclick="findIndi(document.getElementById(\''.$element_id.'\'), document.getElementById(\''.$indiname.'\'), \''.$gedcomTitle.'\'); return false;"
-                   class="icon-button_indi" title="'.WT_I18N::translate('Find an individual').'"></a>';
+                   class="icon-button_indi" title="'.I18N::translate('Find an individual').'"></a>';
     }
 
     private function indiField($field, $value='', $gedcomTitle=WT_GEDURL) {
@@ -703,7 +704,7 @@ $(document).ready(function() {
         } else {
          */
           $controller->addInlineJavaScript("
-            var FACEBOOK_LOGIN_TEXT = '" . addslashes(WT_I18N::translate('Login with Facebook')) . "';
+            var FACEBOOK_LOGIN_TEXT = '" . addslashes(I18N::translate('Login with Facebook')) . "';
             $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');" .
               ($this->hideStandardForms ? '$(document).ready(function() {$("#login-form[name=\'login-form\'], #register-form").hide();});' : ""),
             PageController::JS_PRIORITY_NORMAL);

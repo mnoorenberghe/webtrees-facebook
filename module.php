@@ -33,6 +33,7 @@ use Fisharebest\Webtrees\Functions\FunctionsPrint;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\Site;
+use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\User;
 use Fisharebest\Webtrees\Module\AbstractModule;
 use Fisharebest\Webtrees\Module\ModuleConfigInterface;
@@ -436,11 +437,11 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         usort($friends->data, "nameSort");
         echo "<form id='facebook_friend_list' method='post' action=''>";
         $index = 0;
-        foreach (WT_Tree::getAll() as $tree) {
+        foreach (Tree::getAll() as $tree) {
             $class = ($index++ % 2 ? 'odd' : 'even');
-            echo "<label>" . $tree->tree_name_html . " - " .
+            echo "<label>" . $tree->getNameHtml() . " - " .
                 I18N::translate('Role') . FunctionsPrint::helpLink('role') . ": " .
-                FunctionsEdit::selectEditControl('preApproved['.$tree->tree_id.'][canedit]',
+                FunctionsEdit::selectEditControl('preApproved['.$tree->getTreeId().'][canedit]',
                                     $this->get_edit_options(), NULL, NULL) .
                 "</label>";
       }
@@ -745,7 +746,7 @@ $(document).ready(function() {
         }
 
         foreach ($preApproved as $fbUsername => $details) {
-            if ($indi->getXref() == @$details[$WT_TREE->tree_id]['gedcomid']) {
+            if ($indi->getXref() == @$details[$WT_TREE->getTreeId()]['gedcomid']) {
                 return $fbUsername;
             }
         }

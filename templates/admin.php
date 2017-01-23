@@ -21,6 +21,7 @@ use Fisharebest\Webtrees\Functions\FunctionsEdit;
 use Fisharebest\Webtrees\Functions\FunctionsPrint;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Site;
+use Fisharebest\Webtrees\Tree;
 
 $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translate("Facebook usernames can only contain alphanumeric characters (A-Z, 0-9) or a period") . '"';
 
@@ -123,15 +124,15 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
       <th rowspan="2"><?php echo I18N::translate('Facebook Account'); ?></th>
       <?php
         $index = 0;
-        foreach (WT_Tree::getAll() as $tree) {
-          echo '<th colspan="3" class="'.($index++ % 2 ? 'odd' : 'even').'">', $tree->tree_name_html, '</th>';
+        foreach (Tree::getAll() as $tree) {
+          echo '<th colspan="3" class="'.($index++ % 2 ? 'odd' : 'even').'">', $tree->getNameHtml(), '</th>';
         }
       ?>
     </tr>
     <tr>
       <?php
       $index = 0;
-      foreach (WT_Tree::getAll() as $tree) {
+      foreach (Tree::getAll() as $tree) {
         $class = ($index++ % 2 ? 'odd' : 'even');
 ?>
       <th class="<?php echo $class; ?>"><?php echo I18N::translate('Default individual'), FunctionsPrint::helpLink('default_individual'); ?></th>
@@ -146,14 +147,14 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
       <td><input type="text" name="preApproved_new_facebook_username" <?php echo $usernameValidationAttrs; ?> size="18"/></td>
       <?php
         $index = 0;
-        foreach (WT_Tree::getAll() as $tree) {
+        foreach (Tree::getAll() as $tree) {
           $class = ($index++ % 2 ? 'odd' : 'even');
           echo '<td class="'.$class.'">',
           $this->indiField('preApproved[new]['.$tree->tree_id.'][rootid]',
-                           '', $tree->tree_name_url), '</td>',
+                           '', $tree->getNameUrl()), '</td>',
           '<td class="'.$class.'">',
           $this->indiField('preApproved[new]['.$tree->tree_id.'][gedcomid]',
-                           '', $tree->tree_name_url), '</td>',
+                           '', $tree->getNameUrl()), '</td>',
           '<td class="'.$class.'">',
           FunctionsEdit::selectEditControl('preApproved[new]['.$tree->tree_id.'][canedit]',
                               $this->get_edit_options(), NULL, NULL), '</td>';
@@ -168,14 +169,14 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
 <tr>
       <td nowrap="nowrap">' . $this->facebookProfileLink($fbUsername) . '</td>';
           $index = 0;
-          foreach (WT_Tree::getAll() as $tree) {
+          foreach (Tree::getAll() as $tree) {
             $class = ($index++ % 2 ? 'odd' : 'even');
             echo '<td class="'.$class.'">',
             $this->indiField('preApproved['.$fbUsername.']['.$tree->tree_id.'][rootid]',
-                             @$details[$tree->tree_id]['rootid'], $tree->tree_name_url), '</td>',
+                             @$details[$tree->tree_id]['rootid'], $tree->getNameUrl()), '</td>',
             '<td class="'.$class.'">',
             $this->indiField('preApproved['.$fbUsername.']['.$tree->tree_id.'][gedcomid]',
-                             @$details[$tree->tree_id]['gedcomid'], $tree->tree_name_url), '</td>',
+                             @$details[$tree->tree_id]['gedcomid'], $tree->getNameUrl()), '</td>',
             '<td class="'.$class.'">',
             FunctionsEdit::selectEditControl('preApproved['.$fbUsername.']['.$tree->tree_id.'][canedit]',
                                 $this->get_edit_options(), NULL, @$details[$tree->tree_id]['canedit']),

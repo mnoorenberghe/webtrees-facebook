@@ -25,6 +25,7 @@ define('WT_FACEBOOK_VERSION', "v1.0-beta.7");
 define('WT_FACEBOOK_UPDATE_CHECK_URL', "https://api.github.com/repos/mnoorenberghe/webtrees-facebook/contents/versions.json?ref=gh-pages");
 
 use Fisharebest\Webtrees\Auth;
+use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\User;
 use Fisharebest\Webtrees\Module\AbstractModule;
@@ -98,16 +99,16 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         $mod_name = $this->getName();
         $preApproved = unserialize($this->getSetting('preapproved'));
 
-        if (WT_Filter::post('saveAPI') && WT_Filter::checkCsrf()) {
-            $this->setSetting('app_id', WT_Filter::post('app_id', WT_REGEX_ALPHANUM));
-            $this->setSetting('app_secret', WT_Filter::post('app_secret', WT_REGEX_ALPHANUM));
-            $this->setSetting('require_verified', WT_Filter::post('require_verified', WT_REGEX_INTEGER, false));
-            $this->setSetting('hide_standard_forms', WT_Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
+        if (Filter::post('saveAPI') && Filter::checkCsrf()) {
+            $this->setSetting('app_id', Filter::post('app_id', WT_REGEX_ALPHANUM));
+            $this->setSetting('app_secret', Filter::post('app_secret', WT_REGEX_ALPHANUM));
+            $this->setSetting('require_verified', Filter::post('require_verified', WT_REGEX_INTEGER, false));
+            $this->setSetting('hide_standard_forms', Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
             Log::addConfigurationLog("Facebook: API settings changed");
             WT_FlashMessages::addMessage(WT_I18N::translate('Settings saved'));
-        } else if (WT_Filter::post('addLink') && WT_Filter::checkCsrf()) {
-            $user_id = WT_Filter::post('user_id', WT_REGEX_INTEGER);
-            $facebook_username = $this->cleanseFacebookUsername(WT_Filter::post('facebook_username', WT_REGEX_USERNAME));
+        } else if (Filter::post('addLink') && Filter::checkCsrf()) {
+            $user_id = Filter::post('user_id', WT_REGEX_INTEGER);
+            $facebook_username = $this->cleanseFacebookUsername(Filter::post('facebook_username', WT_REGEX_USERNAME));
             if ($user_id && $facebook_username && !$this->get_user_id_from_facebook_username($facebook_username)) {
                 $user = User::find($user_id);
                 $user->setPreference(self::user_setting_facebook_username, $facebook_username);
@@ -121,8 +122,8 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             } else {
                 WT_FlashMessages::addMessage(WT_I18N::translate('The user could not be linked'));
             }
-        } else if (WT_Filter::post('deleteLink') && WT_Filter::checkCsrf()) {
-            $user_id = WT_Filter::post('deleteLink', WT_REGEX_INTEGER);
+        } else if (Filter::post('deleteLink') && Filter::checkCsrf()) {
+            $user_id = Filter::post('deleteLink', WT_REGEX_INTEGER);
             if ($user_id) {
                 $user = User::find($user_id);
                 $user->deletePreference(self::user_setting_facebook_username);
@@ -131,9 +132,9 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             } else {
                 WT_FlashMessages::addMessage(WT_I18N::translate('The link could not be deleted'));
             }
-        } else if (WT_Filter::post('savePreapproved') && WT_Filter::checkCsrf()) {
-            $table = WT_Filter::post('preApproved');
-            if ($facebook_username = $this->cleanseFacebookUsername(WT_Filter::post('preApproved_new_facebook_username', WT_REGEX_USERNAME))) {
+        } else if (Filter::post('savePreapproved') && Filter::checkCsrf()) {
+            $table = Filter::post('preApproved');
+            if ($facebook_username = $this->cleanseFacebookUsername(Filter::post('preApproved_new_facebook_username', WT_REGEX_USERNAME))) {
                 // Process additions
                 $row = $table['new'];
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
@@ -149,8 +150,8 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             $this->setSetting('preapproved', serialize($preApproved));
             Log::addConfigurationLog("Facebook: Pre-approved Facebook users changed");
             WT_FlashMessages::addMessage(WT_I18N::translate('Changes to pre-approved users saved'));
-        } else if (WT_Filter::post('deletePreapproved') && WT_Filter::checkCsrf()) {
-            $facebook_username = trim(WT_Filter::post('deletePreapproved', WT_REGEX_USERNAME));
+        } else if (Filter::post('deletePreapproved') && Filter::checkCsrf()) {
+            $facebook_username = trim(Filter::post('deletePreapproved', WT_REGEX_USERNAME));
             if ($facebook_username && isset($preApproved[$facebook_username])) {
                 unset($preApproved[$facebook_username]);
                 $this->setSetting('preapproved', serialize($preApproved));
@@ -217,7 +218,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     private function connect() {
         global $WT_SESSION;
 
-        $url = WT_Filter::post('url', NULL, WT_Filter::get('url', NULL, ''));
+        $url = Filter::post('url', NULL, Filter::get('url', NULL, ''));
         // If we’ve clicked login from the login page, we don’t want to go back there.
         if (strpos($url, 'login.php') === 0
             || (strpos($url, 'mod=facebook') !== false
@@ -243,19 +244,19 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         $code = @$_REQUEST["code"];
 
         if (!empty($_REQUEST['error'])) {
-            Log::addErrorLog('Facebook Error: ' . WT_Filter::get('error') . '. Reason: ' . WT_Filter::get('error_reason'));
+            Log::addErrorLog('Facebook Error: ' . Filter::get('error') . '. Reason: ' . Filter::get('error_reason'));
             if ($_REQUEST['error_reason'] == 'user_denied') {
                 $this->error_page(WT_I18N::translate('You must allow access to your Facebook account in order to login with Facebook.'));
             } else {
                 $this->error_page(WT_I18N::translate('An error occurred trying to log you in with Facebook.'));
             }
         } else if (empty($code) && empty($WT_SESSION->facebook_access_token)) {
-            if (!WT_Filter::checkCsrf()) {
+            if (!Filter::checkCsrf()) {
                 echo WT_I18N::translate('This form has expired.  Try again.');
                 return;
             }
 
-            $WT_SESSION->timediff = WT_Filter::postInteger('timediff', -43200, 50400, 0); // Same range as date('Z')
+            $WT_SESSION->timediff = Filter::postInteger('timediff', -43200, 50400, 0); // Same range as date('Z')
             // FB Login flow has not begun so redirect to login dialog.
             $WT_SESSION->facebook_state = md5(uniqid(rand(), TRUE)); // CSRF protection
             $dialog_url = "https://www.facebook.com/dialog/oauth?client_id="
@@ -388,9 +389,9 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
         $preApproved = unserialize($this->getSetting('preapproved'));
 
-        if (WT_Filter::postArray('preApproved') && WT_Filter::checkCsrf()) {
-            $roleRows = WT_Filter::postArray('preApproved');
-            $fbUsernames = WT_Filter::postArray('facebook_username', WT_REGEX_USERNAME);
+        if (Filter::postArray('preApproved') && Filter::checkCsrf()) {
+            $roleRows = Filter::postArray('preApproved');
+            $fbUsernames = Filter::postArray('facebook_username', WT_REGEX_USERNAME);
             foreach($fbUsernames as $facebook_username) {
                 $facebook_username = $this->cleanseFacebookUsername($facebook_username);
                 $this->appendPreapproved($preApproved, $facebook_username, $roleRows);
@@ -451,7 +452,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 $facebook_username . "'/>" .
                 $friend->name . "</label>";
         }
-        echo WT_Filter::getCsrf();
+        echo Filter::getCsrf();
         echo "<button>Select Friends</button></form>";
     }
 
@@ -613,7 +614,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 echo $this->hidden_input("user_name", $wt_username);
                 echo $this->hidden_input("user_password", $password);
                 echo $this->hidden_input("user_hashcode", $hashcode);
-                echo WT_Filter::getCsrf();
+                echo Filter::getCsrf();
                 echo '</form>';
 
                 if ($verifiedByAdmin) {

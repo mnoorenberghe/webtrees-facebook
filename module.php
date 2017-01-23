@@ -27,8 +27,8 @@ define('WT_FACEBOOK_UPDATE_CHECK_URL', "https://api.github.com/repos/mnoorenberg
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Controller\PageController;
 use Fisharebest\Webtrees\Database;
-use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Filter;
+use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\Site;
 use Fisharebest\Webtrees\User;

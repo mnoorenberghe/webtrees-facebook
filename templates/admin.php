@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Site;
 
@@ -33,7 +34,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
 <hr/>
 <h4><?php echo I18N::translate('Facebook API'); ?></h4>
 <form method="post" action="">
-  <?php echo WT_Filter::getCsrf(); ?>
+  <?php echo Filter::getCsrf(); ?>
   <p><?php echo I18N::translate('The App ID and secret can be setup at %s.', '<a href="https://developers.facebook.com/apps">https://developers.facebook.com/apps</a>'); ?></p>
   <label>
     <?php echo I18N::translate('App ID:'); ?>
@@ -66,7 +67,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
 
 <h4><?php echo I18N::translate('Linked users');?></h4>
 <form method="post" action="">
-  <?php echo WT_Filter::getCsrf(); ?>
+  <?php echo Filter::getCsrf(); ?>
   <p><?php echo I18N::translate("Associate a webtrees user with a Facebook account."); ?></p>
 <table>
   <thead>
@@ -106,7 +107,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
 
 <h4><?php echo I18N::translate('Pre-approve users'); ?></h4>
 <form method="post" action="">
-  <?php echo WT_Filter::getCsrf(); ?>
+  <?php echo Filter::getCsrf(); ?>
   <p><?php echo I18N::translate("If you know a user's Facebook username but they don't have an account in webtrees, you can pre-approve one so they can login immediately the first time they visit."); ?></p>
   <ul>
     <li><a href="?mod=facebook&mod_action=admin_friend_picker">
@@ -199,7 +200,7 @@ function update_check() {
     }).done(function(data) {
         var versions = JSON.parse(data);
         if (versions.latest_version > "<?php echo WT_FACEBOOK_VERSION; ?>") {
-            var updateText = "<?php echo WT_Filter::escapeJs(I18N::translate('An update to this module is available: ')); ?>";
+            var updateText = "<?php echo Filter::escapeJs(I18N::translate('An update to this module is available: ')); ?>";
            $("#updateBanner").html(updateText + "<a href='" + versions.website + "'>" + versions.latest_version + " (" + versions.latest_release_date + ")</a>");
         }
     });

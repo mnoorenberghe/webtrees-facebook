@@ -28,6 +28,7 @@ use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Controller\PageController;
 use Fisharebest\Webtrees\Database;
 use Fisharebest\Webtrees\Filter;
+use Fisharebest\Webtrees\Functions\FunctionsEdit;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\Site;
@@ -433,13 +434,12 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
         usort($friends->data, "nameSort");
         echo "<form id='facebook_friend_list' method='post' action=''>";
-        require_once WT_ROOT.'includes/functions/functions_edit.php'; // for select_edit_control
         $index = 0;
         foreach (WT_Tree::getAll() as $tree) {
             $class = ($index++ % 2 ? 'odd' : 'even');
             echo "<label>" . $tree->tree_name_html . " - " .
                 I18N::translate('Role') . help_link('role') . ": " .
-                select_edit_control('preApproved['.$tree->tree_id.'][canedit]',
+                FunctionsEdit::selectEditControl('preApproved['.$tree->tree_id.'][canedit]',
                                     $this->get_edit_options(), NULL, NULL) .
                 "</label>";
       }

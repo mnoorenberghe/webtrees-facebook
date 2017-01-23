@@ -17,6 +17,7 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 use Fisharebest\Webtrees\Filter;
+use Fisharebest\Webtrees\Functions\FunctionsEdit;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Site;
 
@@ -153,7 +154,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
           $this->indiField('preApproved[new]['.$tree->tree_id.'][gedcomid]',
                            '', $tree->tree_name_url), '</td>',
           '<td class="'.$class.'">',
-          select_edit_control('preApproved[new]['.$tree->tree_id.'][canedit]',
+          FunctionsEdit::selectEditControl('preApproved[new]['.$tree->tree_id.'][canedit]',
                               $this->get_edit_options(), NULL, NULL), '</td>';
         }
       ?>
@@ -175,7 +176,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
             $this->indiField('preApproved['.$fbUsername.']['.$tree->tree_id.'][gedcomid]',
                              @$details[$tree->tree_id]['gedcomid'], $tree->tree_name_url), '</td>',
             '<td class="'.$class.'">',
-            select_edit_control('preApproved['.$fbUsername.']['.$tree->tree_id.'][canedit]',
+            FunctionsEdit::selectEditControl('preApproved['.$fbUsername.']['.$tree->tree_id.'][canedit]',
                                 $this->get_edit_options(), NULL, @$details[$tree->tree_id]['canedit']),
 	    '</td>';
           }

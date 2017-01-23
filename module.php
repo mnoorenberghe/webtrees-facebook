@@ -29,6 +29,7 @@ use Fisharebest\Webtrees\Controller\PageController;
 use Fisharebest\Webtrees\Database;
 use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\Log;
+use Fisharebest\Webtrees\Site;
 use Fisharebest\Webtrees\User;
 use Fisharebest\Webtrees\Module\AbstractModule;
 use Fisharebest\Webtrees\Module\ModuleConfigInterface;
@@ -496,7 +497,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
      * @param string $url          (optional) URL to redirect to afterwards.
      */
     private function login_or_register(&$facebookUser, $url='') {
-        $REQUIRE_ADMIN_AUTH_REGISTRATION = WT_Site::getPreference('REQUIRE_ADMIN_AUTH_REGISTRATION');
+        $REQUIRE_ADMIN_AUTH_REGISTRATION = Site::getPreference('REQUIRE_ADMIN_AUTH_REGISTRATION');
 
         if ($this->getSetting('require_verified', 1) && empty($facebookUser->verified)) {
             $this->error_page(WT_I18N::translate('Only verified Facebook accounts are authorized. Please verify your account on Facebook and then try again'));
@@ -537,7 +538,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             $this->error_page($message);
         } else { // This is a new Facebook user who may or may not already have a manual account
 
-            if (!WT_Site::getPreference('USE_REGISTRATION_MODULE')) {
+            if (!Site::getPreference('USE_REGISTRATION_MODULE')) {
                 $this->error_page('<p>' . WT_I18N::translate('The administrator has disabled registrations.') . '</p>');
             }
 

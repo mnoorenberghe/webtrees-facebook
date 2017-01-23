@@ -150,13 +150,13 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
         foreach (Tree::getAll() as $tree) {
           $class = ($index++ % 2 ? 'odd' : 'even');
           echo '<td class="'.$class.'">',
-          $this->indiField('preApproved[new]['.$tree->tree_id.'][rootid]',
+          $this->indiField('preApproved[new]['.$tree->getTreeId().'][rootid]',
                            '', $tree->getNameUrl()), '</td>',
           '<td class="'.$class.'">',
-          $this->indiField('preApproved[new]['.$tree->tree_id.'][gedcomid]',
+          $this->indiField('preApproved[new]['.$tree->getTreeId().'][gedcomid]',
                            '', $tree->getNameUrl()), '</td>',
           '<td class="'.$class.'">',
-          FunctionsEdit::selectEditControl('preApproved[new]['.$tree->tree_id.'][canedit]',
+          FunctionsEdit::selectEditControl('preApproved[new]['.$tree->getTreeId().'][canedit]',
                               $this->get_edit_options(), NULL, NULL), '</td>';
         }
       ?>
@@ -172,14 +172,14 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
           foreach (Tree::getAll() as $tree) {
             $class = ($index++ % 2 ? 'odd' : 'even');
             echo '<td class="'.$class.'">',
-            $this->indiField('preApproved['.$fbUsername.']['.$tree->tree_id.'][rootid]',
-                             @$details[$tree->tree_id]['rootid'], $tree->getNameUrl()), '</td>',
+            $this->indiField('preApproved['.$fbUsername.']['.$tree->getTreeId().'][rootid]',
+                             @$details[$tree->getTreeId()]['rootid'], $tree->getNameUrl()), '</td>',
             '<td class="'.$class.'">',
-            $this->indiField('preApproved['.$fbUsername.']['.$tree->tree_id.'][gedcomid]',
-                             @$details[$tree->tree_id]['gedcomid'], $tree->getNameUrl()), '</td>',
+            $this->indiField('preApproved['.$fbUsername.']['.$tree->getTreeId().'][gedcomid]',
+                             @$details[$tree->getTreeId()]['gedcomid'], $tree->getNameUrl()), '</td>',
             '<td class="'.$class.'">',
-            FunctionsEdit::selectEditControl('preApproved['.$fbUsername.']['.$tree->tree_id.'][canedit]',
-                                $this->get_edit_options(), NULL, @$details[$tree->tree_id]['canedit']),
+            FunctionsEdit::selectEditControl('preApproved['.$fbUsername.']['.$tree->getTreeId().'][canedit]',
+                                $this->get_edit_options(), NULL, @$details[$tree->getTreeId()]['canedit']),
 	    '</td>';
           }
           echo '

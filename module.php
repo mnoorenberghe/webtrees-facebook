@@ -24,7 +24,7 @@ if (!defined('WT_WEBTREES')) {
 define('WT_FACEBOOK_VERSION', "v1.0-beta.7");
 define('WT_FACEBOOK_UPDATE_CHECK_URL', "https://api.github.com/repos/mnoorenberghe/webtrees-facebook/contents/versions.json?ref=gh-pages");
 
-use WT\Auth;
+use Fisharebest\Webtrees\Auth;
 use WT\Log;
 use WT\User;
 use Fisharebest\Webtrees\Module\AbstractModule;
@@ -163,7 +163,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
         $controller = new WT_Controller_Page();
         $controller
-            ->restrictAccess(\WT\Auth::isAdmin())
+            ->restrictAccess(Auth::isAdmin())
             ->setPageTitle($this->getTitle())
             ->pageHeader();
 
@@ -412,7 +412,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         }
 
         $controller
-            ->restrictAccess(\WT\Auth::isAdmin())
+            ->restrictAccess(Auth::isAdmin())
             ->setPageTitle($this->getTitle())
             ->pageHeader();
 

@@ -29,6 +29,7 @@ use Fisharebest\Webtrees\Controller\PageController;
 use Fisharebest\Webtrees\Database;
 use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\Functions\FunctionsEdit;
+use Fisharebest\Webtrees\Functions\FunctionsPrint;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\Site;
@@ -438,7 +439,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         foreach (WT_Tree::getAll() as $tree) {
             $class = ($index++ % 2 ? 'odd' : 'even');
             echo "<label>" . $tree->tree_name_html . " - " .
-                I18N::translate('Role') . help_link('role') . ": " .
+                I18N::translate('Role') . FunctionsPrint::helpLink('role') . ": " .
                 FunctionsEdit::selectEditControl('preApproved['.$tree->tree_id.'][canedit]',
                                     $this->get_edit_options(), NULL, NULL) .
                 "</label>";

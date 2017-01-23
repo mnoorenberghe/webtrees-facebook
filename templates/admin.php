@@ -18,6 +18,7 @@
 
 use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\Functions\FunctionsEdit;
+use Fisharebest\Webtrees\Functions\FunctionsPrint;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Site;
 
@@ -133,9 +134,9 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
       foreach (WT_Tree::getAll() as $tree) {
         $class = ($index++ % 2 ? 'odd' : 'even');
 ?>
-      <th class="<?php echo $class; ?>"><?php echo I18N::translate('Default individual'), help_link('default_individual'); ?></th>
-      <th class="<?php echo $class; ?>"><?php echo I18N::translate('Individual record'), help_link('useradmin_gedcomid'); ?></th>
-      <th class="<?php echo $class; ?>"><?php echo I18N::translate('Role'), help_link('role'); ?></th>
+      <th class="<?php echo $class; ?>"><?php echo I18N::translate('Default individual'), FunctionsPrint::helpLink('default_individual'); ?></th>
+      <th class="<?php echo $class; ?>"><?php echo I18N::translate('Individual record'), FunctionsPrint::helpLink('useradmin_gedcomid'); ?></th>
+      <th class="<?php echo $class; ?>"><?php echo I18N::translate('Role'), FunctionsPrint::helpLink('role'); ?></th>
 
       <?php } ?>
     </tr>

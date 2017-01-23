@@ -748,3 +748,5 @@ $(document).ready(function() {
     }
 
 }
+
+return new FacebookModule;

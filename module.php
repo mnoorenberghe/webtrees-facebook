@@ -25,6 +25,7 @@ define('WT_FACEBOOK_VERSION', "v1.0-beta.7");
 define('WT_FACEBOOK_UPDATE_CHECK_URL', "https://api.github.com/repos/mnoorenberghe/webtrees-facebook/contents/versions.json?ref=gh-pages");
 
 use Fisharebest\Webtrees\Auth;
+use Fisharebest\Webtrees\Database;
 use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\User;
@@ -353,11 +354,11 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 		" LEFT JOIN `##user_setting` facebook_username ON (u.user_id = facebook_username.user_id AND facebook_username.setting_name='facebook_username')".
                 " WHERE u.user_id > 0".
                 " ORDER BY user_name ASC";
-	return WT_DB::prepare($sql)->execute()->fetchAll(PDO::FETCH_OBJ | PDO::FETCH_GROUP);
+	return Database::prepare($sql)->execute()->fetchAll(PDO::FETCH_OBJ | PDO::FETCH_GROUP);
     }
 
     private function get_user_id_from_facebook_username($facebookUsername) {
-        $statement = WT_DB::prepare(
+        $statement = Database::prepare(
                                     "SELECT SQL_CACHE user_id FROM `##user_setting` WHERE setting_name=? AND setting_value=?"
                                    );
 	return $statement->execute(array(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUsername)))->fetchOne();
@@ -589,7 +590,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                             // Use a direct DB query instead of $tree->setUserPreference since we
                             // can't get a reference to the WT_Tree since it checks permissions but
                             // we are trying to give the permissions.
-                            WT_DB::prepare(
+                            Database::prepare(
                                            "REPLACE INTO `##user_gedcom_setting` (user_id, gedcom_id, setting_name, setting_value) VALUES (?, ?, ?, LEFT(?, 255))"
                                            )->execute(array($user->getUserId(),
                                                             $gedcom,

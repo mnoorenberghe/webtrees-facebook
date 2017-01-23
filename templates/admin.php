@@ -17,6 +17,7 @@
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Site;
 
 $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translate("Facebook usernames can only contain alphanumeric characters (A-Z, 0-9) or a period") . '"';
 
@@ -42,7 +43,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
     <?php echo I18N::translate('App Secret:'); ?>
     <input type="text" name="app_secret" value="<?php echo $this->getSetting('app_secret', ''); ?>" size="40" />
   </label>
-  <?php if (!WT_Site::getPreference('USE_REGISTRATION_MODULE')) { ?>
+  <?php if (!Site::getPreference('USE_REGISTRATION_MODULE')) { ?>
   <p><strong><?php echo I18N::translate('NOTE: New user registration is disabled in Site configuration so only existing users will be able to login.');?></strong></p>
   <?php } ?>
   <p>

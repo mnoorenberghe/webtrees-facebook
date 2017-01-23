@@ -25,6 +25,7 @@ define('WT_FACEBOOK_VERSION', "v1.0-beta.7");
 define('WT_FACEBOOK_UPDATE_CHECK_URL', "https://api.github.com/repos/mnoorenberghe/webtrees-facebook/contents/versions.json?ref=gh-pages");
 
 use Fisharebest\Webtrees\Auth;
+use Fisharebest\Webtrees\Controller\PageController;
 use Fisharebest\Webtrees\Database;
 use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\Log;
@@ -163,7 +164,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             }
         }
 
-        $controller = new WT_Controller_Page();
+        $controller = new PageController();
         $controller
             ->restrictAccess(Auth::isAdmin())
             ->setPageTitle($this->getTitle())
@@ -380,13 +381,13 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     }
 
     private function fetchFriendList() {
-        global $WT_SESSION, $controller;
+        global $WT_SESSION;
 
-        $controller = new WT_Controller_Page();
+        $controller = new PageController();
 
         $controller->addInlineJavaScript("
             $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');",
-                                         WT_Controller_Page::JS_PRIORITY_LOW);
+                                         PageController::JS_PRIORITY_LOW);
 
         $preApproved = unserialize($this->getSetting('preapproved'));
 
@@ -604,8 +605,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 }
 
                 // We need jQuery below
-                global $controller;
-                $controller = new WT_Controller_Page();
+                $controller = new PageController();
                 $controller
                     ->setPageTitle($this->getTitle())
                     ->pageHeader();
@@ -646,7 +646,7 @@ $(document).ready(function() {
     }
 
     private function error_page($message) {
-        global $controller, $WT_SESSION;
+        global $WT_SESSION;
 
         try {
             unset($WT_SESSION->facebook_access_token);
@@ -654,7 +654,7 @@ $(document).ready(function() {
             Zend_Session::writeClose();
         } catch (Exception $e) { }
 
-        $controller = new WT_Controller_Page();
+        $controller = new PageController();
         $controller
             ->setPageTitle($this->getTitle())
             ->pageHeader();
@@ -705,7 +705,7 @@ $(document).ready(function() {
             var FACEBOOK_LOGIN_TEXT = '" . addslashes(WT_I18N::translate('Login with Facebook')) . "';
             $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');" .
               ($this->hideStandardForms ? '$(document).ready(function() {$("#login-form[name=\'login-form\'], #register-form").hide();});' : ""),
-            WT_Controller_Page::JS_PRIORITY_NORMAL);
+            PageController::JS_PRIORITY_NORMAL);
         //}
 
           // Use the Facebook profile photo if there isn't an existing photo

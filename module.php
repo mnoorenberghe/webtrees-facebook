@@ -27,8 +27,11 @@ define('WT_FACEBOOK_UPDATE_CHECK_URL', "https://api.github.com/repos/mnoorenberg
 use WT\Auth;
 use WT\Log;
 use WT\User;
+use Fisharebest\Webtrees\Module\AbstractModule;
+use Fisharebest\Webtrees\Module\ModuleConfigInterface;
+use Fisharebest\Webtrees\Module\ModuleMenuInterface;
 
-class facebook_WT_Module extends WT_Module implements WT_Module_Config, WT_Module_Menu {
+class FacebookModule extends AbstractModule implements ModuleConfigInterface, ModuleMenuInterface {
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
     const user_setting_facebook_username = 'facebook_username';
     const profile_photo_large_width = 1024;

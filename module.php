@@ -27,6 +27,7 @@ define('WT_FACEBOOK_UPDATE_CHECK_URL', "https://api.github.com/repos/mnoorenberg
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Controller\PageController;
 use Fisharebest\Webtrees\Database;
+use Fisharebest\Webtrees\File;
 use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\Functions\FunctionsEdit;
@@ -51,15 +52,6 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
     public function __construct() {
         parent::__construct();
-
-        // Load any local user translations
-        if (is_dir(WT_MODULES_DIR . $this->getName() . '/language')) {
-            if (file_exists(WT_MODULES_DIR . $this->getName() . '/language/' . WT_LOCALE . '.mo')) {
-                $tr = new Zend_Translate('gettext', WT_MODULES_DIR . $this->getName() . '/language/'
-                                         . WT_LOCALE . '.mo', WT_LOCALE);
-                Zend_Registry::get('Zend_Translate')->addTranslation($tr);
-            }
-        }
     }
 
     // Implement WT_Module_Config
@@ -269,20 +261,18 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             $dialog_url = "https://www.facebook.com/dialog/oauth?client_id="
                 . $app_id . "&redirect_uri=" . urlencode($connect_url) . "&state="
                 . Session::get('facebook_state') . "&scope=" . self::scope;
-            Zend_Session::writeClose();
             echo("<script> window.location.href='" . $dialog_url . "'</script>");
         } else if (Session::has('facebook_access_token')) {
             // User has already authorized the app and we have a token so get their info.
             $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?access_token="
                 . Session::get('facebook_access_token');
-            $response = $this->fetch_url($graph_url);
+            $response = File::fetchUrl($graph_url);
             if ($response === FALSE) {
                 Log::addErrorLog("Facebook: Access token is no longer valid");
                 // Clear the state and try again with a new token.
                 try {
                     Session::forget('facebook_access_token');
                     Session::forget('facebook_state');
-                    Zend_Session::writeClose();
                 } catch (Exception $e) { }
 
                 header("Location: " . $this->getConnectURL($url));
@@ -298,7 +288,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 . "client_id=" . $app_id . "&redirect_uri=" . urlencode($connect_url)
                 . "&client_secret=" . $app_secret . "&code=" . $code;
 
-            $response = $this->fetch_url($token_url);
+            $response = File::fetchUrl($token_url);
             if ($response === FALSE) {
                 Log::addErrorLog("Facebook: Couldn't exchange the code for an access token");
                 $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
@@ -314,7 +304,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
             $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?access_token="
                 . Session::get('facebook_access_token');
-            $meResponse = $this->fetch_url($graph_url);
+            $meResponse = File::fetchUrl($graph_url);
             if ($meResponse === FALSE) {
                 $this->error_page(I18N::translate("Could not fetch your information from Facebook. Please try again."));
             }
@@ -323,22 +313,6 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         } else {
             $this->error_page(I18N::translate("The state does not match. You may been tricked to load this page."));
         }
-    }
-
-    private function fetch_url($url) {
-        try {
-            $client = new Zend_Http_Client($url,
-                                           array(
-                                                 'keepalive' => true,
-                                                 'storeresponse' => false
-                                                 )
-                                           );
-            $response = $client->request();
-        } catch (Exception $e) {
-            Log::addErrorLog($e);
-            return false;
-        }
-        return $response->isError() ? false : $response->getBody();
     }
 
     private function hidden_input($name, $value) {
@@ -412,7 +386,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         }
         $graph_url = "https://graph.facebook.com/" . self::api_dir . "me/friends?fields=first_name,last_name,name,username&access_token="
             . Session::get('facebook_access_token');
-        $friendsResponse = $this->fetch_url($graph_url);
+        $friendsResponse = File::fetchUrl($graph_url);
         if ($friendsResponse === FALSE) {
             $this->error_page(I18N::translate("Could not fetch your friends from Facebook. Note that this feature won't work for Facebook Apps created after 2014-04-30 due to a Facebook policy change."));
         }
@@ -476,8 +450,6 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             Session::put('theme_dir', Auth::user()->getPreference('theme'));
             Session::put('activity_time', WT_TIMESTAMP);
             $user->setPreference('sessiontime', WT_TIMESTAMP);
-
-            Zend_Session::writeClose();
 
             return $user_id;
         } elseif (!$is_admin && !$verified) {
@@ -650,7 +622,6 @@ $(document).ready(function() {
         try {
             Session::forget('facebook_access_token');
             Session::forget('facebook_state');
-            Zend_Session::writeClose();
         } catch (Exception $e) { }
 
         $controller = new PageController();
@@ -660,7 +631,7 @@ $(document).ready(function() {
 
         try {
             FlashMessages::addMessage($message);
-        } catch (Zend_Session_Exception $zse) {
+        } catch (Exception $e) {
             echo '<div class="warning">'.$message.'</div>';
         }
         exit;

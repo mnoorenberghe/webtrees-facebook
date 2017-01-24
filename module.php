@@ -51,7 +51,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     private $hideStandardForms = false;
 
     public function __construct() {
-        parent::__construct();
+        parent::__construct('facebook');
     }
 
     // Implement WT_Module_Config
@@ -73,14 +73,11 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     public function modAction($mod_action) {
         switch($mod_action) {
             case 'admin':
-                $this->admin();
-                break;
+                return $this->admin();
 	    case 'connect':
-                $this->connect();
-                break;
+                return $this->connect();
             case 'admin_friend_picker':
-                $this->fetchFriendList();
-                break;
+                return $this->fetchFriendList();
 	    default:
                 header('HTTP/1.0 404 Not Found');
         }

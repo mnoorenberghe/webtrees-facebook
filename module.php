@@ -32,6 +32,7 @@ use Fisharebest\Webtrees\Functions\FunctionsEdit;
 use Fisharebest\Webtrees\Functions\FunctionsPrint;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Log;
+use Fisharebest\Webtrees\Session;
 use Fisharebest\Webtrees\Site;
 use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\User;
@@ -223,8 +224,6 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     }
 
     private function connect() {
-        global $WT_SESSION;
-
         $url = Filter::post('url', NULL, Filter::get('url', NULL, ''));
         // If we’ve clicked login from the login page, we don’t want to go back there.
         if (strpos($url, 'login.php') === 0
@@ -234,7 +233,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         }
 
         // Redirect to the homepage/$url if the user is already logged-in.
-        if ($WT_SESSION->wt_user) {
+        if (Auth::check()) {
             header('Location: ' . WT_SCRIPT_PATH . $url);
             exit;
         }
@@ -257,31 +256,31 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             } else {
                 $this->error_page(I18N::translate('An error occurred trying to log you in with Facebook.'));
             }
-        } else if (empty($code) && empty($WT_SESSION->facebook_access_token)) {
+        } else if (empty($code) && !Session::has('facebook_access_token')) {
             if (!Filter::checkCsrf()) {
                 echo I18N::translate('This form has expired.  Try again.');
                 return;
             }
 
-            $WT_SESSION->timediff = Filter::postInteger('timediff', -43200, 50400, 0); // Same range as date('Z')
+            Session::put('timediff', Filter::postInteger('timediff', -43200, 50400, 0)); // Same range as date('Z')
             // FB Login flow has not begun so redirect to login dialog.
-            $WT_SESSION->facebook_state = md5(uniqid(rand(), TRUE)); // CSRF protection
+            Session::put('facebook_state', md5(uniqid(rand(), TRUE))); // CSRF protection
             $dialog_url = "https://www.facebook.com/dialog/oauth?client_id="
                 . $app_id . "&redirect_uri=" . urlencode($connect_url) . "&state="
-                . $WT_SESSION->facebook_state . "&scope=" . self::scope;
+                . Session::get('facebook_state') . "&scope=" . self::scope;
             Zend_Session::writeClose();
             echo("<script> window.location.href='" . $dialog_url . "'</script>");
-        } else if (!empty($WT_SESSION->facebook_access_token)) {
+        } else if (Session::has('facebook_access_token')) {
             // User has already authorized the app and we have a token so get their info.
             $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?access_token="
-                . $WT_SESSION->facebook_access_token;
+                . Session::get('facebook_access_token');
             $response = $this->fetch_url($graph_url);
             if ($response === FALSE) {
                 Log::addErrorLog("Facebook: Access token is no longer valid");
                 // Clear the state and try again with a new token.
                 try {
-                    unset($WT_SESSION->facebook_access_token);
-                    unset($WT_SESSION->facebook_state);
+                    Session::forget('facebook_access_token');
+                    Session::forget('facebook_state');
                     Zend_Session::writeClose();
                 } catch (Exception $e) { }
 
@@ -291,7 +290,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
             $user = json_decode($response);
             $this->login_or_register($user, $url);
-        } else if (!empty($WT_SESSION->facebook_state) && ($WT_SESSION->facebook_state === $_REQUEST['state'])) {
+        } else if (Session::has('facebook_state') && (Session::get('facebook_state') === $_REQUEST['state'])) {
             // User has already been redirected to login dialog.
             // Exchange the code for an access token.
             $token_url = "https://graph.facebook.com/" . self::api_dir . "oauth/access_token?"
@@ -310,10 +309,10 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
 
-            $WT_SESSION->facebook_access_token = $params['access_token'];
+            Session::put('facebook_access_token', $params['access_token']);
 
             $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?access_token="
-                . $WT_SESSION->facebook_access_token;
+                . Session::get('facebook_access_token');
             $meResponse = $this->fetch_url($graph_url);
             if ($meResponse === FALSE) {
                 $this->error_page(I18N::translate("Could not fetch your information from Facebook. Please try again."));
@@ -386,8 +385,6 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     }
 
     private function fetchFriendList() {
-        global $WT_SESSION;
-
         $controller = new PageController();
 
         $controller->addInlineJavaScript("
@@ -409,11 +406,11 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             exit;
         }
 
-        if (empty($WT_SESSION->facebook_access_token)) {
+        if (!Session::has('facebook_access_token')) {
             $this->error_page(I18N::translate("You must <a href='%s'>login to the site via Facebook</a> in order to import friends from Facebook", "index.php?logout=1"));
         }
         $graph_url = "https://graph.facebook.com/" . self::api_dir . "me/friends?fields=first_name,last_name,name,username&access_token="
-            . $WT_SESSION->facebook_access_token;
+            . Session::get('facebook_access_token');
         $friendsResponse = $this->fetch_url($graph_url);
         if ($friendsResponse === FALSE) {
             $this->error_page(I18N::translate("Could not fetch your friends from Facebook. Note that this feature won't work for Facebook Apps created after 2014-04-30 due to a Facebook policy change."));
@@ -463,7 +460,6 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     }
 
     private function login($user_id) {
-        global $WT_SESSION;
         $user = User::find($user_id);
         $user_name = $user->getUserName();
 
@@ -475,9 +471,9 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             Auth::login($user);
             Log::addAuthenticationLog('Login: ' . Auth::user()->getUserName() . '/' . Auth::user()->getRealName());
 
-            $WT_SESSION->locale    = Auth::user()->getPreference('language');
-            $WT_SESSION->theme_dir = Auth::user()->getPreference('theme');
-            $WT_SESSION->activity_time = WT_TIMESTAMP;
+            Session::put('locale', Auth::user()->getPreference('language'));
+            Session::put('theme_dir', Auth::user()->getPreference('theme'));
+            Session::put('activity_time', WT_TIMESTAMP);
             $user->setPreference('sessiontime', WT_TIMESTAMP);
 
             Zend_Session::writeClose();
@@ -650,11 +646,9 @@ $(document).ready(function() {
     }
 
     private function error_page($message) {
-        global $WT_SESSION;
-
         try {
-            unset($WT_SESSION->facebook_access_token);
-            unset($WT_SESSION->facebook_state);
+            Session::forget('facebook_access_token');
+            Session::forget('facebook_state');
             Zend_Session::writeClose();
         } catch (Exception $e) { }
 

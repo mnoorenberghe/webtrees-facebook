@@ -243,7 +243,8 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             return;
         }
 
-        $code = @$_REQUEST["code"];
+        if (isset($_REQUEST['code']))
+            $code = $_REQUEST["code"];
 
         if (!empty($_REQUEST['error'])) {
             Log::addErrorLog('Facebook Error: ' . Filter::get('error') . '. Reason: ' . Filter::get('error_reason'));

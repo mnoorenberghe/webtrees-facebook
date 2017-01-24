@@ -359,7 +359,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     }
 
     private function getConnectURL($returnTo='') {
-        return WT_SERVER_NAME . WT_SCRIPT_PATH . "module.php?mod=" . $this->getName()
+        return WT_BASE_URL . "module.php?mod=" . $this->getName()
             . "&mod_action=connect" . ($returnTo ? "&url=" . urlencode($returnTo) : ""); // Workaround FB bug where "&url=" (empty value) prevents OAuth
     }
 
@@ -508,7 +508,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                     $user = User::find($user_id);
                     $user->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username));
                     // redirect to the homepage/$url
-                    header('Location: ' . WT_SCRIPT_PATH . $url);
+                    header('Location: ' . WT_BASE_URL . $url);
                     return;
             }
             $this->error_page($message);
@@ -604,7 +604,7 @@ function verify_hash_success() {
 
 function verify_hash_failure() {
   alert("' . I18N::translate("There was an error verifying your account. Contact the site administrator if you are unable to access the site.")  . '");
-  window.location = "' . WT_SCRIPT_PATH . '";
+  window.location = "' . WT_BASE_URL . '";
 }
 $(document).ready(function() {
   $.post("' . WT_LOGIN_URL . '", $("#verify-form").serialize(), verify_hash_success).fail(verify_hash_failure);

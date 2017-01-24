@@ -77,11 +77,11 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         switch($mod_action) {
             case 'admin':
                 return $this->admin();
-	    case 'connect':
+            case 'connect':
                 return $this->connect();
             case 'admin_friend_picker':
                 return $this->fetchFriendList();
-	    default:
+            default:
                 header('HTTP/1.0 404 Not Found');
         }
     }
@@ -332,20 +332,20 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     }
 
     private function get_users_with_module_settings() {
-	$sql=
-		"SELECT u.user_id, user_name, real_name, email, facebook_username.setting_value as facebook_username".
-		" FROM `##user` u".
-		" LEFT JOIN `##user_setting` facebook_username ON (u.user_id = facebook_username.user_id AND facebook_username.setting_name='facebook_username')".
-                " WHERE u.user_id > 0".
-                " ORDER BY user_name ASC";
-	return Database::prepare($sql)->execute()->fetchAll(PDO::FETCH_OBJ | PDO::FETCH_GROUP);
+        $sql=
+            "SELECT u.user_id, user_name, real_name, email, facebook_username.setting_value as facebook_username".
+            " FROM `##user` u".
+            " LEFT JOIN `##user_setting` facebook_username ON (u.user_id = facebook_username.user_id AND facebook_username.setting_name='facebook_username')".
+                    " WHERE u.user_id > 0".
+                    " ORDER BY user_name ASC";
+        return Database::prepare($sql)->execute()->fetchAll(PDO::FETCH_OBJ | PDO::FETCH_GROUP);
     }
 
     private function get_user_id_from_facebook_username($facebookUsername) {
         $statement = Database::prepare(
                                     "SELECT SQL_CACHE user_id FROM `##user_setting` WHERE setting_name=? AND setting_value=?"
                                    );
-	return $statement->execute(array(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUsername)))->fetchOne();
+        return $statement->execute(array(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUsername)))->fetchOne();
     }
 
     private function facebookProfileLink($username) {
@@ -420,7 +420,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 FunctionsEdit::selectEditControl('preApproved['.$tree->getTreeId().'][canedit]',
                                     $this->get_edit_options(), NULL, NULL) .
                 "</label>";
-      }
+        }
 
         foreach ($friends->data as $friend) {
             $facebook_username = $this->cleanseFacebookUsername(isset($friend->username) ? $friend->username : $friend->id);
@@ -498,10 +498,10 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             $login_result = $this->login($user_id);
             $message = '';
             switch ($login_result) {
-		case -1: // not validated
-		    $message=I18N::translate('This account has not been verified.  Please check your email for a verification message.');
+                case -1: // not validated
+                    $message=I18N::translate('This account has not been verified.  Please check your email for a verification message.');
                     break;
-		case -2: // not approved
+                case -2: // not approved
                     $message=I18N::translate('This account has not been approved.  Please wait for an administrator to approve it.');
                     break;
                 default:
@@ -642,9 +642,9 @@ $(document).ready(function() {
     }
 
     private function print_findindi_link($element_id, $indiname='', $gedcomTitle=WT_GEDURL) {
-	return '<a href="#" tabindex="-1"
-                   onclick="findIndi(document.getElementById(\''.$element_id.'\'), document.getElementById(\''.$indiname.'\'), \''.$gedcomTitle.'\'); return false;"
-                   class="icon-button_indi" title="'.I18N::translate('Find an individual').'"></a>';
+        return '<a href="#" tabindex="-1"
+            onclick="findIndi(document.getElementById(\''.$element_id.'\'), document.getElementById(\''.$indiname.'\'), \''.$gedcomTitle.'\'); return false;"
+            class="icon-button_indi" title="'.I18N::translate('Find an individual').'"></a>';
     }
 
     private function indiField($field, $value='', $gedcomTitle=WT_GEDURL) {

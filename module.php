@@ -28,6 +28,7 @@ use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Controller\PageController;
 use Fisharebest\Webtrees\Database;
 use Fisharebest\Webtrees\Filter;
+use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\Functions\FunctionsEdit;
 use Fisharebest\Webtrees\Functions\FunctionsPrint;
 use Fisharebest\Webtrees\I18N;
@@ -113,7 +114,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             $this->setSetting('require_verified', Filter::post('require_verified', WT_REGEX_INTEGER, false));
             $this->setSetting('hide_standard_forms', Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
             Log::addConfigurationLog("Facebook: API settings changed");
-            WT_FlashMessages::addMessage(I18N::translate('Settings saved'));
+            FlashMessages::addMessage(I18N::translate('Settings saved'));
         } else if (Filter::post('addLink') && Filter::checkCsrf()) {
             $user_id = Filter::post('user_id', WT_REGEX_INTEGER);
             $facebook_username = $this->cleanseFacebookUsername(Filter::post('facebook_username', WT_REGEX_USERNAME));
@@ -126,9 +127,9 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                     $this->setSetting('preapproved', serialize($preApproved));
                 }
                 Log::addConfigurationLog("Facebook: User $user_id linked to Facebook user $facebook_username");
-                WT_FlashMessages::addMessage(I18N::translate('User %1$s linked to Facebook user %2$s', $user_id, $facebook_username));
+                FlashMessages::addMessage(I18N::translate('User %1$s linked to Facebook user %2$s', $user_id, $facebook_username));
             } else {
-                WT_FlashMessages::addMessage(I18N::translate('The user could not be linked'));
+                FlashMessages::addMessage(I18N::translate('The user could not be linked'));
             }
         } else if (Filter::post('deleteLink') && Filter::checkCsrf()) {
             $user_id = Filter::post('deleteLink', WT_REGEX_INTEGER);
@@ -136,9 +137,9 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 $user = User::find($user_id);
                 $user->deletePreference(self::user_setting_facebook_username);
                 Log::addConfigurationLog("Facebook: User $user_id unlinked from a Facebook user");
-                WT_FlashMessages::addMessage(I18N::translate('User unlinked'));
+                FlashMessages::addMessage(I18N::translate('User unlinked'));
             } else {
-                WT_FlashMessages::addMessage(I18N::translate('The link could not be deleted'));
+                FlashMessages::addMessage(I18N::translate('The link could not be deleted'));
             }
         } else if (Filter::post('savePreapproved') && Filter::checkCsrf()) {
             $table = Filter::post('preApproved');
@@ -148,7 +149,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
                 $this->setSetting('preapproved', serialize($preApproved));
                 Log::addConfigurationLog("Facebook: Pre-approved Facebook user: $facebook_username");
-                WT_FlashMessages::addMessage(I18N::translate('Pre-approved user "%s" added', $facebook_username));
+                FlashMessages::addMessage(I18N::translate('Pre-approved user "%s" added', $facebook_username));
             }
             unset($table['new']);
             // Process changes
@@ -157,16 +158,16 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             }
             $this->setSetting('preapproved', serialize($preApproved));
             Log::addConfigurationLog("Facebook: Pre-approved Facebook users changed");
-            WT_FlashMessages::addMessage(I18N::translate('Changes to pre-approved users saved'));
+            FlashMessages::addMessage(I18N::translate('Changes to pre-approved users saved'));
         } else if (Filter::post('deletePreapproved') && Filter::checkCsrf()) {
             $facebook_username = trim(Filter::post('deletePreapproved', WT_REGEX_USERNAME));
             if ($facebook_username && isset($preApproved[$facebook_username])) {
                 unset($preApproved[$facebook_username]);
                 $this->setSetting('preapproved', serialize($preApproved));
                 Log::addConfigurationLog("Facebook: Pre-approved Facebook user deleted: $facebook_username");
-                WT_FlashMessages::addMessage(I18N::translate('Pre-approved user "%s" deleted', $facebook_username));
+                FlashMessages::addMessage(I18N::translate('Pre-approved user "%s" deleted', $facebook_username));
             } else {
-                WT_FlashMessages::addMessage(I18N::translate('The pre-approved user "%s" could not be deleted', $facebook_username));
+                FlashMessages::addMessage(I18N::translate('The pre-approved user "%s" could not be deleted', $facebook_username));
             }
         }
 
@@ -196,11 +197,11 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     private function appendPreapproved(&$preApproved, $facebook_username, $row) {
         $facebook_username = $this->cleanseFacebookUsername($facebook_username);
         if (!$facebook_username) {
-            WT_FlashMessages::addMessage(I18N::translate('Missing Facebook username'));
+            FlashMessages::addMessage(I18N::translate('Missing Facebook username'));
             return;
         }
         if ($this->get_user_id_from_facebook_username($facebook_username)) {
-            WT_FlashMessages::addMessage(I18N::translate('User is already registered'));
+            FlashMessages::addMessage(I18N::translate('User is already registered'));
             return;
         }
 
@@ -401,7 +402,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 $this->appendPreapproved($preApproved, $facebook_username, $roleRows);
             }
             $this->setSetting('preapproved', serialize($preApproved));
-            WT_FlashMessages::addMessage(I18N::translate('Users successfully imported from Facebook'));
+            FlashMessages::addMessage(I18N::translate('Users successfully imported from Facebook'));
             header("Location: module.php?mod=" . $this->getName() . "&mod_action=admin");
             exit;
         }
@@ -658,7 +659,7 @@ $(document).ready(function() {
             ->pageHeader();
 
         try {
-            WT_FlashMessages::addMessage($message);
+            FlashMessages::addMessage($message);
         } catch (Zend_Session_Exception $zse) {
             echo '<div class="warning">'.$message.'</div>';
         }

@@ -388,7 +388,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         if (!Session::has('facebook_access_token')) {
             $this->error_page(I18N::translate("You must <a href='%s'>login to the site via Facebook</a> in order to import friends from Facebook", "index.php?logout=1"));
         }
-        $graph_url = "https://graph.facebook.com/" . self::api_dir . "me/friends?fields=first_name,last_name,name,username&access_token="
+        $graph_url = "https://graph.facebook.com/" . self::api_dir . "me/friends?fields=first_name,last_name,name,id&access_token="
             . Session::get('facebook_access_token');
         $friendsResponse = File::fetchUrl($graph_url);
         if ($friendsResponse === FALSE) {

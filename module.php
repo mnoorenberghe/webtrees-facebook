@@ -182,7 +182,6 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
         $unlinkedOptions = $this->user_options($unlinkedUsers);
 
-        require_once WT_ROOT.'includes/functions/functions_edit.php';
         require 'templates/admin.php';
     }
 

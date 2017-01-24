@@ -705,7 +705,7 @@ $(document).ready(function() {
         global $WT_TREE;
 
         // If they have an account, look for the link on their user record.
-        if ($user = User::findByGenealogyRecord($WT_TREE, $indi)) {
+        if ($user = User::findByGenealogyRecord($indi)) {
             return $user->getPreference(self::user_setting_facebook_username);
         }
 

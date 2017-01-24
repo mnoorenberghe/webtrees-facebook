@@ -442,7 +442,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         $user = User::find($user_id);
         $user_name = $user->getUserName();
 
-        // Below copied from authenticateUser in authentication.php
+        // Below copied from login.php
         $is_admin=$user->getPreference('canadmin');
         $verified=$user->getPreference('verified');
         $approved=$user->getPreference('verified_by_admin');
@@ -451,9 +451,9 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             Log::addAuthenticationLog('Login: ' . Auth::user()->getUserName() . '/' . Auth::user()->getRealName());
 
             Session::put('locale', Auth::user()->getPreference('language'));
-            Session::put('theme_dir', Auth::user()->getPreference('theme'));
-            Session::put('activity_time', WT_TIMESTAMP);
-            $user->setPreference('sessiontime', WT_TIMESTAMP);
+            Session::put('theme_id', Auth::user()->getPreference('theme'));
+            Auth::user()->setPreference('sessiontime', WT_TIMESTAMP);
+            I18N::init(Auth::user()->getPreference('language'));
 
             return $user_id;
         } elseif (!$is_admin && !$verified) {

@@ -197,8 +197,12 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         $preApproved[$facebook_username] = array();
         foreach ($row as $gedcom => $settings) {
             $preApproved[$facebook_username][$gedcom] = array(
-                                                              'rootid' => filter_var(@$settings['rootid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' .  WT_REGEX_XREF . ')$/u'))),
-                                                              'gedcomid' => filter_var(@$settings['gedcomid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_XREF . ')$/u'))),
+                                                              'rootid' => array_key_exists('rootid', $settings)
+                                                                  ? filter_var($settings['rootid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' .  WT_REGEX_XREF . ')$/u')))
+                                                                  : NULL,
+                                                              'gedcomid' => array_key_exists('gedcomid', $settings)
+                                                                  ? filter_var(@$settings['gedcomid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_XREF . ')$/u')))
+                                                                  : NULL,
                                                               'canedit' => filter_var($settings['canedit'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_ALPHA . ')$/u')))
             );
         }

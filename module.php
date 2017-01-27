@@ -627,17 +627,13 @@ $(document).ready(function() {
             Session::forget('facebook_access_token');
             Session::forget('facebook_state');
         } catch (Exception $e) { }
+        
+        FlashMessages::addMessage($message);
 
         $controller = new PageController();
         $controller
             ->setPageTitle($this->getTitle())
             ->pageHeader();
-
-        try {
-            FlashMessages::addMessage($message);
-        } catch (Exception $e) {
-            echo '<div class="warning">'.$message.'</div>';
-        }
         exit;
     }
 

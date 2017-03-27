@@ -297,15 +297,13 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 Log::addErrorLog("Facebook: Couldn't exchange the code for an access token");
                 $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
-            $params = null;
-            parse_str($response, $params);
-            if (empty($params['access_token'])) {
+            $params = json_decode($response);
+            if (!isset($params->access_token)) {
                 Log::addErrorLog("Facebook: The access token was empty");
                 $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
 
-            Session::put('facebook_access_token', $params['access_token']);
-
+            Session::put('facebook_access_token', $params->access_token);
             $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?access_token="
                 . Session::get('facebook_access_token');
             $meResponse = File::fetchUrl($graph_url);

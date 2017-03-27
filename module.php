@@ -230,7 +230,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
         // Redirect to the homepage/$url if the user is already logged-in.
         if (Auth::check()) {
-            header('Location: ' . WT_SCRIPT_PATH . $url);
+            header('Location: ' . WT_BASE_URL . $url);
             exit;
         }
 

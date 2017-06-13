@@ -49,7 +49,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
     const user_setting_facebook_username = 'facebook_username';
     const profile_photo_large_width = 1024;
-    const api_dir = "v1.0/"; // TODO: make an admin preference so new installs can use this module.
+    const api_dir = "v2.9/"; // TODO: make an admin preference so new installs can use this module.
 
     private $hideStandardForms = false;
 
@@ -268,7 +268,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             echo("<script> window.location.href='" . $dialog_url . "'</script>");
         } else if (Session::has('facebook_access_token')) {
             // User has already authorized the app and we have a token so get their info.
-            $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?access_token="
+            $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?fields=id,birthday,email,first_name,last_name,gender,hometown,link,locale,timezone,updated_time,verified&access_token="
                 . Session::get('facebook_access_token');
             $response = File::fetchUrl($graph_url);
             if ($response === FALSE) {

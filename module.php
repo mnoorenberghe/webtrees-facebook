@@ -304,7 +304,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             }
 
             Session::put('facebook_access_token', $params->access_token);
-            $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?access_token="
+            $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?fields=id,birthday,email,first_name,last_name,gender,hometown,link,locale,timezone,updated_time,verified&access_token="
                 . Session::get('facebook_access_token');
             $meResponse = File::fetchUrl($graph_url);
             if ($meResponse === FALSE) {

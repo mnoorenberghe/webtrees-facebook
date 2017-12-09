@@ -1,0 +1,25 @@
+{
+    "autoload": {
+        "psr-4": {
+            "My\\": "tests/selenium/"
+        }
+    },
+    "description": "Facebook integration for webtrees genealogy software",
+    "homepage": "https://mnoorenberghe.github.io/webtrees-facebook/",
+    "name": "mnoorenberghe/webtrees-facebook",
+    "license": "GPL-2.0",
+    "require-dev": {
+        "lmc/steward": "^2.3"
+    },
+    "scripts": {
+        "selenium-server": ["docker run -e SE_OPTS=\"-enablePassThrough false\" --add-host=\"webtrees-git.localhost:192.168.0.101\" -p 4444:4444 -p 5900:5900  selenium/standalone-firefox:3.8.1"],
+        "test": [
+            "composer dump-autoload",
+            "./vendor/bin/steward run -vvv local firefox"
+        ]
+    },
+    "support": {
+        "issues": "https://github.com/mnoorenberghe/webtrees-facebook/issues",
+        "source": "https://github.com/mnoorenberghe/webtrees-facebook"
+    }
+}

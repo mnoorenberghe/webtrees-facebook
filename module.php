@@ -97,7 +97,6 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     }
 
     private function admin() {
-        $mod_name = $this->getName();
         $preApproved = unserialize($this->getSetting('preapproved'));
 
         if (Filter::post('saveAPI') && Filter::checkCsrf()) {
@@ -211,7 +210,6 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     }
 
     private function isSetup() {
-        $mod_name = $this->getName();
         $app_id = $this->getSetting('app_id');
         $app_secret = $this->getSetting('app_secret');
         $this->hideStandardForms = $this->getSetting('hide_standard_forms', false);

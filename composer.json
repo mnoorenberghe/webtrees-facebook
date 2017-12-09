@@ -1,6 +1,7 @@
 {
     "autoload": {
         "psr-4": {
+            "Fisharebest\\Webtrees\\": "../../app/",
             "My\\": "tests/selenium/"
         }
     },

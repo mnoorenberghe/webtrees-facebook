@@ -5,7 +5,7 @@ Facebook integration for webtrees genealogy software.
 
 All of the authentication is done on the server-side so no external JavaScript files are needed.
 
-* webtrees 1.5.0 or higher is required up to beta 5. webtrees 1.6.1 or higher is required for beta 6+.
+* webtrees 1.7.9 is required for beta 7. webtrees 1.5.0 or higher is required up to beta 5. webtrees 1.6.1 or higher is required for beta 6+.
 * 'Allow visitors to request account registration' must be enabled in Site Configuration if you want
   to allow new users via Facebook.
 

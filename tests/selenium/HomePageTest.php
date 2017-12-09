@@ -3,11 +3,9 @@ namespace My; // Note the "My" namespace maps to the "tests" folder, as defined 
 
 use My\StewardTestCase;
 
-use Fisharebest\Webtrees\Module;
-
 class HomePageTest extends StewardTestCase {
     public function testShouldHaveLoginButtonAndStandardForm() {
-        Module::getModuleByName('facebook')->setSetting('hide_standard_forms', '0');
+        self::$module->setSetting('hide_standard_forms', '0');
 
         // Load the URL (will wait until page is loaded)
         $this->wd->get(BASE_URL); // $this->wd holds instance of \RemoteWebDriver
@@ -26,7 +24,7 @@ class HomePageTest extends StewardTestCase {
     }
 
     public function testShouldHaveLoginButtonWithoutStandardForm() {
-        Module::getModuleByName('facebook')->setSetting('hide_standard_forms', '1');
+        self::$module->setSetting('hide_standard_forms', '1');
 
         // Load the URL (will wait until page is loaded)
         $this->wd->get(BASE_URL); // $this->wd holds instance of \RemoteWebDriver

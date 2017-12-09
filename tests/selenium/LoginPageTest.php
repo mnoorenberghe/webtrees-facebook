@@ -3,11 +3,10 @@ namespace My;
 
 use My\StewardTestCase;
 
-use Fisharebest\Webtrees\Module;
-
 class LoginPageTest extends StewardTestCase {
     public function testShouldHaveLoginButtonAndStandardForm() {
-        Module::getModuleByName('facebook')->setSetting('hide_standard_forms', '0');
+        self::$module->setSetting('hide_standard_forms', '0');
+
         $this->wd->get(BASE_URL . '/login.php');
         $loginButton = $this->waitForId('facebook-login-button');
         $this->assertContains('Login with Facebook', $loginButton->getText());
@@ -18,7 +17,7 @@ class LoginPageTest extends StewardTestCase {
     }
 
     public function testShouldHaveLoginButtonWithoutStandardForm() {
-        Module::getModuleByName('facebook')->setSetting('hide_standard_forms', '0');
+        self::$module->setSetting('hide_standard_forms', '1');
         $this->wd->get(BASE_URL . '/login.php');
         $loginButton = $this->waitForId('facebook-login-button');
         $this->assertContains('Login with Facebook', $loginButton->getText());

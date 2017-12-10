@@ -10,13 +10,16 @@
     "name": "mnoorenberghe/webtrees-facebook",
     "license": "GPL-2.0",
     "require-dev": {
-        "lmc/steward": "^2.3"
+        "lmc/steward": "^2.3",
+        "facebook/graph-sdk": "^5.6"
     },
     "scripts": {
-        "selenium-server": ["docker run -e SE_OPTS=\"-enablePassThrough false\" --add-host=\"webtrees-git.localhost:192.168.0.101\" -p 4444:4444 -p 5900:5900  selenium/standalone-firefox:3.8.1"],
+        "selenium-server": ["docker run -e SE_OPTS=\"-enablePassThrough false\" --add-host=\"webtrees-git.localhost:10.232.160.18\" -p 4444:4444 -p 5900:5900  selenium/standalone-firefox:3.8.1"],
         "test": [
-            "composer dump-autoload",
             "./vendor/bin/steward run -vvv local firefox"
+        ],
+        "update-fb": [
+            "composer dump-autoload"
         ]
     },
     "support": {

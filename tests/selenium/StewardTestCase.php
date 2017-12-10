@@ -16,6 +16,8 @@ define('WT_CLIENT_IP', '127.0.0.1');
 use Fisharebest\Webtrees\Database;
 use Fisharebest\Webtrees\Module;
 
+define('WT_LOCALE', "en-US");
+
 class StewardTestCase extends AbstractTestCase {
 
     public static $module;
@@ -26,10 +28,12 @@ class StewardTestCase extends AbstractTestCase {
         define('WT_TBLPREFIX', $dbconfig['tblpfx']);
         unset($dbconfig);
 
+        define('WT_TIMESTAMP', (int) Database::prepare("SELECT UNIX_TIMESTAMP()")->fetchOne());
+
         self::$module = Module::getModuleByName('facebook');
     }
 
     public function tearDown() {
-        echo Database::getQueryLog();
+        //echo Database::getQueryLog();
     }
 }

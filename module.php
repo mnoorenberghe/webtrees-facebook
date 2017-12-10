@@ -471,8 +471,6 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
      * @param string $url          (optional) URL to redirect to afterwards.
      */
     private function login_or_register(&$facebookUser, $url='') {
-        $REQUIRE_ADMIN_AUTH_REGISTRATION = Site::getPreference('REQUIRE_ADMIN_AUTH_REGISTRATION');
-
         if ($this->getSetting('require_verified', 1) && empty($facebookUser->verified)) {
             $this->error_page(I18N::translate('Only verified Facebook accounts are authorized. Please verify your account on Facebook and then try again'));
         }
@@ -534,7 +532,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             // From login.php:
             Log::addAuthenticationLog('User registration requested for: ' . $wt_username);
             if ($user = User::create($wt_username, $facebookUser->name, $facebookUser->email, $password)) {
-                $verifiedByAdmin = !$REQUIRE_ADMIN_AUTH_REGISTRATION || isset($preApproved[$username]);
+                $verifiedByAdmin = isset($preApproved[$username]);
 
                 $user
                     ->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username))

@@ -539,7 +539,6 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                     ->setPreference('reg_hashcode',      $hashcode)
                     ->setPreference('contactmethod',     'messaging2')
                     ->setPreference('visibleonline',     '1')
-                    ->setPreference('editaccount',       '1')
                     ->setPreference('auto_accept',       '0')
                     ->setPreference('canadmin',          '0')
                     ->setPreference('sessiontime',       $verifiedByAdmin ? WT_TIMESTAMP : '0')

@@ -463,6 +463,30 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         throw new Exception('Login failure: Unexpected condition');
     }
 
+    public function createUser($wt_username, $name, $email, $password, $hashcode, $verifiedByAdmin, $fb_user_id) {
+        // From login.php:
+        Log::addAuthenticationLog('User registration requested for: ' . $wt_username);
+        $user = User::create($wt_username, $name, $email, $password);
+        if (!$user) {
+            return $user;
+        }
+
+        $user
+            ->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUserID($fb_user_id))
+            ->setPreference('language',          WT_LOCALE)
+            ->setPreference('verified',          '1')
+            ->setPreference('verified_by_admin', $verifiedByAdmin ? '1' : '0')
+            ->setPreference('reg_timestamp',     date('U'))
+            ->setPreference('reg_hashcode',      $hashcode)
+            ->setPreference('contactmethod',     'messaging2')
+            ->setPreference('visibleonline',     '1')
+            ->setPreference('auto_accept',       '0')
+            ->setPreference('canadmin',          '0')
+            ->setPreference('sessiontime',       $verifiedByAdmin ? WT_TIMESTAMP : '0');
+
+        return $user;
+    }
+
     /**
      * If the Facebook username or email is associated with an account, login to it. Otherwise, register a new account.
      *
@@ -524,24 +548,17 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             $password = md5(uniqid(rand(), TRUE));
             $hashcode = md5(uniqid(rand(), true));
             $preApproved = unserialize($this->getSetting('preapproved'));
+            $verifiedByAdmin = isset($preApproved[$username]);
 
-            // From login.php:
-            Log::addAuthenticationLog('User registration requested for: ' . $wt_username);
-            if ($user = User::create($wt_username, $facebookUser->name, $facebookUser->email, $password)) {
-                $verifiedByAdmin = isset($preApproved[$username]);
+            if ($user = $this->createUser($wt_username,
+                                          $facebookUser->name,
+                                          $facebookUser->email,
+                                          $password,
+                                          $hashcode,
+                                          $verifiedByAdmin,
+                                          $facebookUser->id)) {
 
                 $user
-                    ->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUserID($facebookUser->id))
-                    ->setPreference('language',          WT_LOCALE)
-                    ->setPreference('verified',          '1')
-                    ->setPreference('verified_by_admin', $verifiedByAdmin ? '1' : '0')
-                    ->setPreference('reg_timestamp',     date('U'))
-                    ->setPreference('reg_hashcode',      $hashcode)
-                    ->setPreference('contactmethod',     'messaging2')
-                    ->setPreference('visibleonline',     '1')
-                    ->setPreference('auto_accept',       '0')
-                    ->setPreference('canadmin',          '0')
-                    ->setPreference('sessiontime',       $verifiedByAdmin ? WT_TIMESTAMP : '0')
                     ->setPreference('comment',
                                     @$facebookUser->birthday . "\n " .
                                     "https://www.facebook.com/" . $this->cleanseFacebookUserID($facebookUser->id));

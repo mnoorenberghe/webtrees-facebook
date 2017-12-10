@@ -361,6 +361,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     }
 
     private function fetchFriendList() {
+        global $controller;
         $controller = new PageController();
 
         $controller->addInlineJavaScript("
@@ -579,6 +580,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 }
 
                 // We need jQuery below
+                global $controller;
                 $controller = new PageController();
                 $controller
                     ->setPageTitle($this->getTitle())
@@ -620,11 +622,12 @@ $(document).ready(function() {
     }
 
     private function error_page($message) {
+        global $controller;
         try {
             Session::forget('facebook_access_token');
             Session::forget('facebook_state');
         } catch (Exception $e) { }
-        
+
         FlashMessages::addMessage($message);
 
         $controller = new PageController();

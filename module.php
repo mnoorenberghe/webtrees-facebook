@@ -109,8 +109,8 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             FlashMessages::addMessage(I18N::translate('Settings saved'));
         } else if (Filter::post('addLink') && Filter::checkCsrf()) {
             $user_id = Filter::post('user_id', WT_REGEX_INTEGER);
-            $facebook_username = $this->cleanseFacebookUsername(Filter::post('facebook_username', WT_REGEX_USERNAME));
-            if ($user_id && $facebook_username && !$this->get_user_id_from_facebook_username($facebook_username)) {
+            $facebook_username = $this->cleanseFacebookUserID(Filter::post('facebook_username', WT_REGEX_USERNAME));
+            if ($user_id && $facebook_username && !$this->get_wt_user_id_from_facebook_user_id($facebook_username)) {
                 $user = User::find($user_id);
                 $user->setPreference(self::user_setting_facebook_username, $facebook_username);
                 if (isset($preApproved[$facebook_username])) {
@@ -135,7 +135,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             }
         } else if (Filter::post('savePreapproved') && Filter::checkCsrf()) {
             $table = Filter::post('preApproved');
-            if ($facebook_username = $this->cleanseFacebookUsername(Filter::post('preApproved_new_facebook_username', WT_REGEX_USERNAME))) {
+            if ($facebook_username = $this->cleanseFacebookUserID(Filter::post('preApproved_new_facebook_username', WT_REGEX_USERNAME))) {
                 // Process additions
                 $row = $table['new'];
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
@@ -186,12 +186,12 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
     }
 
     private function appendPreapproved(&$preApproved, $facebook_username, $row) {
-        $facebook_username = $this->cleanseFacebookUsername($facebook_username);
+        $facebook_username = $this->cleanseFacebookUserID($facebook_username);
         if (!$facebook_username) {
             FlashMessages::addMessage(I18N::translate('Missing Facebook username'));
             return;
         }
-        if ($this->get_user_id_from_facebook_username($facebook_username)) {
+        if ($this->get_wt_user_id_from_facebook_user_id($facebook_username)) {
             FlashMessages::addMessage(I18N::translate('User is already registered'));
             return;
         }
@@ -338,21 +338,20 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         return Database::prepare($sql)->execute()->fetchAll(PDO::FETCH_OBJ | PDO::FETCH_GROUP);
     }
 
-    private function get_user_id_from_facebook_username($facebookUsername) {
+    private function get_wt_user_id_from_facebook_user_id($fbUserId) {
         $statement = Database::prepare(
                                     "SELECT SQL_CACHE user_id FROM `##user_setting` WHERE setting_name=? AND setting_value=?"
                                    );
-        return $statement->execute(array(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUsername)))->fetchOne();
+        return $statement->execute(array(self::user_setting_facebook_username, $this->cleanseFacebookUserID($fbUserId)))->fetchOne();
     }
 
-    private function facebookProfileLink($username) {
-        return '<a href="https://www.facebook.com/'.$username.'"><img src="https://graph.facebook.com/' . self::api_dir .$username.'/picture?type=square" height="25" width="25"/>&nbsp;'.$username.'</a>';
+    private function facebookProfileLink($user_id) {
+        return '<a href="https://www.facebook.com/'.$user_id.'"><img src="https://graph.facebook.com/' . self::api_dir .$user_id.'/picture?type=square" height="25" width="25"/>&nbsp;'.$user_id.'</a>';
     }
 
-    // Guidelines from https://www.facebook.com/help/105399436216001
-    private function cleanseFacebookUsername($username) {
-        // Case and periods don't matter
-        return strtolower(trim(str_replace('.', '', $username)));
+    private function cleanseFacebookUserID($user_id) {
+        // This is just a numeric string
+        return $user_id;
     }
 
     private function getConnectURL($returnTo='') {
@@ -374,7 +373,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             $roleRows = Filter::postArray('preApproved');
             $fbUsernames = Filter::postArray('facebook_username', WT_REGEX_USERNAME);
             foreach($fbUsernames as $facebook_username) {
-                $facebook_username = $this->cleanseFacebookUsername($facebook_username);
+                $facebook_username = $this->cleanseFacebookUserID($facebook_username);
                 $this->appendPreapproved($preApproved, $facebook_username, $roleRows);
             }
             $this->setSetting('preapproved', serialize($preApproved));
@@ -421,11 +420,11 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
         }
 
         foreach ($friends->data as $friend) {
-            $facebook_username = $this->cleanseFacebookUsername(isset($friend->username) ? $friend->username : $friend->id);
+            $facebook_username = $this->cleanseFacebookUserID($friend->id);
 
             // Exclude friends who are already pre-approved or are current users
             if (isset($preApproved[$facebook_username])
-                || $this->get_user_id_from_facebook_username($facebook_username)) {
+                || $this->get_wt_user_id_from_facebook_user_id($facebook_username)) {
                 continue;
             }
             echo "<label><input name='facebook_username[]' type='checkbox' value='" .
@@ -475,10 +474,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             $this->error_page(I18N::translate('Only verified Facebook accounts are authorized. Please verify your account on Facebook and then try again'));
         }
 
-        if (empty($facebookUser->username)) {
-            $facebookUser->username = $facebookUser->id;
-        }
-        $user_id = $this->get_user_id_from_facebook_username($facebookUser->username);
+        $user_id = $this->get_wt_user_id_from_facebook_user_id($facebookUser->id);
         if (!$user_id) {
             if (!isset($facebookUser->email)) {
                 $this->error_page(I18N::translate('You must grant access to your email address via Facebook in order to use this website. Please uninstall the application on Facebook and try again.'));
@@ -502,7 +498,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                     break;
                 default:
                     $user = User::find($user_id);
-                    $user->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username));
+                    $user->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUserID($facebookUser->id));
                     // redirect to the homepage/$url
                     header('Location: ' . WT_BASE_URL . $url);
                     return;
@@ -515,7 +511,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
             }
 
             // check if the username is already in use
-            $username = $this->cleanseFacebookUsername($facebookUser->username);
+            $username = $this->cleanseFacebookUserID($facebookUser->id);
             $wt_username = substr($username, 0, 32); // Truncate the username to 32 characters to match the DB.
 
             if (User::findByIdentifier($wt_username)) {
@@ -535,7 +531,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                 $verifiedByAdmin = isset($preApproved[$username]);
 
                 $user
-                    ->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUsername($facebookUser->username))
+                    ->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUserID($facebookUser->id))
                     ->setPreference('language',          WT_LOCALE)
                     ->setPreference('verified',          '1')
                     ->setPreference('verified_by_admin', $verifiedByAdmin ? '1' : '0')
@@ -549,7 +545,7 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
                     ->setPreference('sessiontime',       $verifiedByAdmin ? WT_TIMESTAMP : '0')
                     ->setPreference('comment',
                                     @$facebookUser->birthday . "\n " .
-                                    "https://www.facebook.com/" . $this->cleanseFacebookUsername($facebookUser->username));
+                                    "https://www.facebook.com/" . $this->cleanseFacebookUserID($facebookUser->id));
 
                 // Apply pre-approval settings
                 if (isset($preApproved[$username])) {

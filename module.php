@@ -46,7 +46,7 @@ use Fisharebest\Webtrees\Module\ModuleConfigInterface;
 use Fisharebest\Webtrees\Module\ModuleMenuInterface;
 
 class FacebookModule extends AbstractModule implements ModuleConfigInterface, ModuleMenuInterface {
-    const scope = 'user_birthday,user_hometown,user_location,user_relationships,user_relationship_details,email';
+    const scope = 'user_birthday,user_hometown,user_location,email,user_gender,user_link';
     const user_fields = 'id,birthday,email,name,first_name,last_name,gender,hometown,link,locale,timezone,updated_time,verified';
     const user_setting_facebook_username = 'facebook_username';
     const profile_photo_large_width = 1024;

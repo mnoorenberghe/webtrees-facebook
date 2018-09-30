@@ -34,3 +34,19 @@ All of the authentication is done on the server-side so no external JavaScript f
 * Pre-approval of users won't work for Facebook Apps created after 2014-04-30. See [#16](https://github.com/mnoorenberghe/webtrees-facebook/issues/16).
 * There is no comment field during registration with a Facebook account.
 * The login button will not appear if all trees have "Require visitor authentication".
+
+## Development ##
+
+Clone this repo into a `facebook` subdirectory of `modules_v3/` in a webtrees installation.
+
+### Automated Tests ###
+
+Tests are located in the `tests/` directory. They use [steward](https://github.com/lmc-eu/steward) and
+[php-webdriver](https://github.com/facebook/php-webdriver).
+
+#### Setup ####
+  brew install geckodriver
+  composer install
+  ./vendor/bin/steward install
+  java -jar ./vendor/bin/selenium-server-standalone-3.1*.jar
+  ./vendor/bin/steward run -vvv dev firefox

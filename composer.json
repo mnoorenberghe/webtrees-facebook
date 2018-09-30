@@ -25,5 +25,8 @@
     "support": {
         "issues": "https://github.com/mnoorenberghe/webtrees-facebook/issues",
         "source": "https://github.com/mnoorenberghe/webtrees-facebook"
+    },
+    "require": {
+        "facebook/webdriver": "^1.6"
     }
 }

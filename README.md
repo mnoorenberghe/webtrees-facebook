@@ -45,8 +45,8 @@ Tests are located in the `tests/` directory. They use [steward](https://github.c
 [php-webdriver](https://github.com/facebook/php-webdriver).
 
 #### Setup ####
-  brew install geckodriver
-  composer install
-  ./vendor/bin/steward install
-  java -jar ./vendor/bin/selenium-server-standalone-3.1*.jar
-  ./vendor/bin/steward run -vvv dev firefox
+    brew install geckodriver
+    composer install
+    ./vendor/bin/steward install
+    java -jar ./vendor/bin/selenium-server-standalone-3.1*.jar
+    ./vendor/bin/steward run -vvv dev firefox

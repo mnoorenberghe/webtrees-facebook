@@ -44,6 +44,9 @@ use Fisharebest\Webtrees\Module\ModuleCustomTrait;
 use Fisharebest\Webtrees\Module\ModuleGlobalInterface;
 use Fisharebest\Webtrees\Module\ModuleGlobalTrait;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
 class FacebookModule extends AbstractModule implements ModuleCustomInterface, ModuleConfigInterface, ModuleGlobalInterface {
     const scope = 'user_birthday,user_hometown,user_location,email,user_gender,user_link';
     const user_fields = 'id,birthday,email,name,first_name,last_name,gender,hometown,link,locale,timezone,updated_time,verified';
@@ -116,9 +119,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
 
     // Extend WT_Module
     public function modAction($mod_action) {
-        switch($mod_action) {
-            case 'admin':
-                return $this->admin();
+        switch ($mod_action) {
             case 'connect':
                 return $this->connect();
             case 'admin_friend_picker':
@@ -138,7 +139,13 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                       );
     }
 
-    private function admin() {
+    /**
+     * @param ServerRequestInterface $request
+     *
+     * @return ResponseInterface
+     */
+    public function getAdminAction(ServerRequestInterface $request): ResponseInterface
+    {
         $preApproved = unserialize($this->getPreference('preapproved'));
 
         if (Filter::post('saveAPI')) {

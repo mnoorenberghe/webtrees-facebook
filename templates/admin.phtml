@@ -16,16 +16,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-use Fisharebest\Webtrees\Filter;
-use Fisharebest\Webtrees\Functions\FunctionsEdit;
-use Fisharebest\Webtrees\Functions\FunctionsPrint;
 use Fisharebest\Webtrees\Http\RequestHandlers\ControlPanel;
 use Fisharebest\Webtrees\I18N;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Site;
-use Fisharebest\Webtrees\Tree;
 
 /**
  * @var string $title Page title
+ * @var $roles
  */
 
 $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translate("Facebook usernames can only contain alphanumeric characters (A-Z, 0-9) or a period") . '"';
@@ -87,7 +85,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
 <hr />
 
 <h4><?php echo I18N::translate('Linked users'); ?></h4>
-<form method="post" action="">
+<form method="post">
   <?= csrf_field() ?>
   <p><?php echo I18N::translate("Associate a webtrees user with a Facebook account."); ?></p>
   <table>
@@ -127,7 +125,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
 <hr />
 
 <h4><?php echo I18N::translate('Pre-approve users'); ?></h4>
-<form method="post" action="">
+<form method="post">
   <?= csrf_field() ?>
   <p><?php echo I18N::translate("If you know a user's Facebook username but they don't have an account in webtrees, you can pre-approve one so they can login immediately the first time they visit."); ?></p>
   <ul>
@@ -143,7 +141,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
         <?php
         $index = 0;
         foreach ($all_trees as $tree) {
-          echo '<th colspan="3" class="' . ($index++ % 2 ? 'odd' : 'even') . '">', $tree->getNameHtml(), '</th>';
+          echo '<th colspan="3" class="' . ($index++ % 2 ? 'odd' : 'even') . '">', $tree->title(), '</th>';
         }
         ?>
       </tr>
@@ -153,9 +151,9 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
         foreach ($all_trees as $tree) {
           $class = ($index++ % 2 ? 'odd' : 'even');
         ?>
-          <th class="<?php echo $class; ?>"><?php echo I18N::translate('Default individual'), FunctionsPrint::helpLink('default_individual'); ?></th>
-          <th class="<?php echo $class; ?>"><?php echo I18N::translate('Individual record'), FunctionsPrint::helpLink('useradmin_gedcomid'); ?></th>
-          <th class="<?php echo $class; ?>"><?php echo I18N::translate('Role'), FunctionsPrint::helpLink('role'); ?></th>
+          <th class="<?php echo $class; ?>" title="<?= I18N::translate('This individual will be selected by default when viewing charts and reports.') ?>"><?= I18N::translate('Default individual') ?></th>
+          <th class="<?php echo $class; ?>"><?= I18N::translate('Individual record') ?></th>
+          <th class="<?php echo $class; ?>"><?= I18N::translate('Role') ?></th>
 
         <?php } ?>
       </tr>
@@ -168,24 +166,27 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
         foreach ($all_trees as $tree) {
           $class = ($index++ % 2 ? 'odd' : 'even');
           echo '<td class="' . $class . '">',
-          $this->indiField(
-            'preApproved[new][' . $tree->getTreeId() . '][rootid]',
-            '',
-            $tree->getNameUrl()
-          ), '</td>',
+          view('components/select-individual', [
+            'name' => 'preApproved[new][' . $tree->id() . '][rootid]',
+            'individual' => Registry::individualFactory()->make('', $tree),
+            'tree' => $tree
+          ]),
+          '</td>',
           '<td class="' . $class . '">',
-          $this->indiField(
-            'preApproved[new][' . $tree->getTreeId() . '][gedcomid]',
-            '',
-            $tree->getNameUrl()
-          ), '</td>',
+          view('components/select-individual', [
+            'name' => 'preApproved[new][' . $tree->id() . '][gedcomid]',
+            'individual' => Registry::individualFactory()->make('', $tree),
+            'tree' => $tree
+          ]),
+          '</td>',
           '<td class="' . $class . '">',
-          FunctionsEdit::selectEditControl(
-            'preApproved[new][' . $tree->getTreeId() . '][canedit]',
-            $this->get_edit_options(),
-            NULL,
-            NULL
-          ), '</td>';
+          view('components/select', [
+            'id' => NULL,
+            'name' => 'preApproved[new][' . $tree->id() . '][canedit]',
+            'selected' => NULL,
+            'options' => $roles
+          ]),
+          '</td>';
         }
         ?>
       </tr>
@@ -200,24 +201,26 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
           foreach ($all_trees as $tree) {
             $class = ($index++ % 2 ? 'odd' : 'even');
             echo '<td class="' . $class . '">',
-            $this->indiField(
-              'preApproved[' . $fbUsername . '][' . $tree->getTreeId() . '][rootid]',
-              @$details[$tree->getTreeId()]['rootid'],
-              $tree->getNameUrl()
-            ), '</td>',
+            view('components/select-individual', [
+              'name' => 'preApproved[' . $fbUsername . '][' . $tree->id() . '][rootid]',
+              'individual' => Registry::individualFactory()->make(@$details[$tree->id()]['rootid'], $tree),
+              'tree' => $tree
+            ]),
+            '</td>',
             '<td class="' . $class . '">',
-            $this->indiField(
-              'preApproved[' . $fbUsername . '][' . $tree->getTreeId() . '][gedcomid]',
-              @$details[$tree->getTreeId()]['gedcomid'],
-              $tree->getNameUrl()
-            ), '</td>',
+            view('components/select-individual', [
+              'name' => 'preApproved[' . $fbUsername . '][' . $tree->id() . '][gedcomid]',
+              'individual' => Registry::individualFactory()->make(@$details[$tree->id()]['gedcomid'], $tree),
+              'tree' => $tree
+            ]),
+            '</td>',
             '<td class="' . $class . '">',
-            FunctionsEdit::selectEditControl(
-              'preApproved[' . $fbUsername . '][' . $tree->getTreeId() . '][canedit]',
-              $this->get_edit_options(),
-              NULL,
-              @$details[$tree->getTreeId()]['canedit']
-            ),
+            view('components/select', [
+              'id' => NULL,
+              'name' => 'preApproved[' . $fbUsername . '][' . $tree->id() . '][canedit]',
+              'selected' => @$details[$tree->id()]['canedit'],
+              'options' => $roles
+            ]),
             '</td>';
           }
           echo '

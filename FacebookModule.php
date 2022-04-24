@@ -46,7 +46,8 @@ use Fisharebest\Webtrees\Module\ModuleCustomTrait;
 use Fisharebest\Webtrees\Module\ModuleGlobalInterface;
 use Fisharebest\Webtrees\Module\ModuleGlobalTrait;
 use Fisharebest\Webtrees\Services\TreeService;
-
+use Illuminate\Database\Capsule\Manager as DB;
+use Illuminate\Database\Query\JoinClause;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -55,7 +56,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     const user_fields = 'id,birthday,email,name,first_name,last_name,gender,hometown,link,locale,timezone,updated_time,verified';
     const user_setting_facebook_username = 'facebook_username';
     const profile_photo_large_width = 1024;
-    const api_dir = "v2.9/"; // TODO: make an admin preference so new installs can use this module.
+    const api_dir = "v13.0/"; // TODO: make an admin preference so new installs can use this module.
 
     private $hideStandardForms = false;
     private TreeService $tree_service;
@@ -144,14 +145,15 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         }
     }
 
-    private function get_edit_options() {
+    private function roles()
+    {
         return array( // from admin_users.php
                      'none'  => /* I18N: Listbox entry; name of a role */ I18N::translate('Visitor'),
                      'access'=> /* I18N: Listbox entry; name of a role */ I18N::translate('Member'),
                      'edit'  => /* I18N: Listbox entry; name of a role */ I18N::translate('Editor'),
                      'accept'=> /* I18N: Listbox entry; name of a role */ I18N::translate('Moderator'),
                      'admin' => /* I18N: Listbox entry; name of a role */ I18N::translate('Manager')
-                      );
+        );
     }
 
     /**
@@ -234,11 +236,11 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         $linkedUsers = array();
         $unlinkedUsers = array();
         $users = $this->get_users_with_module_settings();
-        foreach ($users as $userid => $user) {
-            if (empty($user[0]->facebook_username)) {
-                $unlinkedUsers[$userid] = $user[0];
+        foreach ($users as $user) {
+            if (empty($user->facebook_username)) {
+                $unlinkedUsers[$user->user_id] = $user;
             } else {
-                $linkedUsers[$userid] = $user[0];
+                $linkedUsers[$user->user_id] = $user;
             }
         }
 
@@ -250,10 +252,14 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             'title'               => $this->title(),
             'app_id'              => $this->getPreference('app_id', ''),
             'app_secret'          => $this->getPreference('app_secret', ''),
+            'fb_api_dir'          => self::api_dir,
             'require_verified'    => $this->getPreference('require_verified', 1),
             'hide_standard_forms' => $this->getPreference('hide_standard_forms', 0),
+            'linkedUsers'         => $linkedUsers,
             'unlinkedOptions'     => $unlinkedOptions,
+            'unlinkedUsers'       => $unlinkedUsers,
             'all_trees'           => $this->tree_service->all(),
+            'roles'               => $this->roles(),
         ]);
     }
 
@@ -401,13 +407,16 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     }
 
     private function get_users_with_module_settings() {
-        $sql=
-            "SELECT u.user_id, user_name, real_name, email, facebook_username.setting_value as facebook_username".
-            " FROM `##user` u".
-            " LEFT JOIN `##user_setting` facebook_username ON (u.user_id = facebook_username.user_id AND facebook_username.setting_name='facebook_username')".
-                    " WHERE u.user_id > 0".
-                    " ORDER BY user_name ASC";
-        return Database::prepare($sql)->execute()->fetchAll(PDO::FETCH_OBJ | PDO::FETCH_GROUP);
+        return DB::table('user')
+            ->leftJoin('user_setting', static function (JoinClause $join): void {
+                $join
+                    ->on('user.user_id', '=', 'user_setting.user_id')
+                    ->where('user_setting.setting_name', '=', 'facebook_username');
+            })
+            ->where('user.user_id', '>', 0)
+            ->select(['user.user_id', 'user_name', 'real_name', 'email', 'user_setting.setting_value as facebook_username'])
+            ->orderBy('user_name')
+            ->get();
     }
 
     private function get_wt_user_id_from_facebook_user_id($fbUserId) {
@@ -478,7 +487,10 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             echo "<label>" . $tree->getNameHtml() . " - " .
                 I18N::translate('Role') . FunctionsPrint::helpLink('role') . ": " .
                 FunctionsEdit::selectEditControl('preApproved['.$tree->getTreeId().'][canedit]',
-                                    $this->get_edit_options(), NULL, NULL) .
+                $roles,
+                NULL,
+                NULL
+            ) .
                 "</label>";
         }
 

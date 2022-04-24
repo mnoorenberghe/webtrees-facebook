@@ -23,18 +23,22 @@ use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Site;
 use Fisharebest\Webtrees\Tree;
 
+/**
+ * @var string $title Page title
+ */
+
 $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translate("Facebook usernames can only contain alphanumeric characters (A-Z, 0-9) or a period") . '"';
 
 ?>
 
-<link rel="stylesheet" href="<?php echo WT_MODULES_DIR . $this->getName(); ?>/facebook.css?v=<?php echo  WT_FACEBOOK_VERSION; ?>" />
-<h3><?php echo $this->getTitle(); ?></h3>
+<h1><?= $title; ?></h1>
+
 <div>
-  <strong><?php echo I18N::translate('Version: ')?></strong><?php echo WT_FACEBOOK_VERSION; ?>
+  <strong><?php echo I18N::translate('Version: ') ?></strong><?php echo WT_FACEBOOK_VERSION; ?>
   <span id="updateBanner" class="ui-state-highlight"></span>
 </div>
 
-<hr/>
+<hr />
 <h4><?php echo I18N::translate('Facebook API'); ?></h4>
 <form method="post" action="">
   <?php echo Filter::getCsrf(); ?>
@@ -72,38 +76,38 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
 <form method="post" action="">
   <?php echo Filter::getCsrf(); ?>
   <p><?php echo I18N::translate("Associate a webtrees user with a Facebook account."); ?></p>
-<table>
-  <thead>
-    <tr>
-      <th><?php echo I18N::translate('webtrees Username'); ?></th>
-      <th><?php echo I18N::translate('Real name'); ?></th>
-      <th><?php echo I18N::translate('Facebook Account'); ?></th>
-      <th><?php echo I18N::translate('Unlink'); ?></th>
-    </tr>
-  </thead>
-  <tbody>
-    <?php
+  <table>
+    <thead>
+      <tr>
+        <th><?php echo I18N::translate('webtrees Username'); ?></th>
+        <th><?php echo I18N::translate('Real name'); ?></th>
+        <th><?php echo I18N::translate('Facebook Account'); ?></th>
+        <th><?php echo I18N::translate('Unlink'); ?></th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php
       if (!empty($linkedUsers)) {
         $index = 0;
         foreach ($linkedUsers as $user_id => $user) {
           $class = ($index++ % 2 ? 'odd' : 'even');
           echo '
-    <tr class="'.$class.'">
-      <td><a href="admin_users.php?filter='.$user->user_name.'">'.$user->user_name.'</a></td>
-      <td><a href="admin_users.php?filter='.$user->user_name.'">'.$user->real_name.'</a></td>
-      <td>'.$this->facebookProfileLink($user->facebook_username).'</td>
-      <td style="text-align: center;"><button name="deleteLink" value="'.$user_id.'" class="icon-delete" formnovalidate="formnovalidate" style="border:none;"></button></td>
+    <tr class="' . $class . '">
+      <td><a href="admin_users.php?filter=' . $user->user_name . '">' . $user->user_name . '</a></td>
+      <td><a href="admin_users.php?filter=' . $user->user_name . '">' . $user->real_name . '</a></td>
+      <td>' . $this->facebookProfileLink($user->facebook_username) . '</td>
+      <td style="text-align: center;"><button name="deleteLink" value="' . $user_id . '" class="icon-delete" formnovalidate="formnovalidate" style="border:none;"></button></td>
     </tr>';
         }
       }
-    ?>
-    <tr>
-      <td colspan="2"><select name="user_id"><?php echo $unlinkedOptions; ?></select></td>
-      <td><input type="text" name="facebook_username" required="required" <?php echo $usernameValidationAttrs; ?> /></td>
-      <td><input type="submit" name="addLink" value="<?php echo I18N::translate('Add'); ?>"></td>
-    </tr>
-  </tbody>
-</table>
+      ?>
+      <tr>
+        <td colspan="2"><select name="user_id"><?= $unlinkedOptions; ?></select></td>
+        <td><input type="text" name="facebook_username" required="required" <?php echo $usernameValidationAttrs; ?> /></td>
+        <td><input type="submit" name="addLink" value="<?php echo I18N::translate('Add'); ?>"></td>
+      </tr>
+    </tbody>
+  </table>
 </form>
 
 <hr/>
@@ -114,54 +118,64 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
   <p><?php echo I18N::translate("If you know a user's Facebook username but they don't have an account in webtrees, you can pre-approve one so they can login immediately the first time they visit."); ?></p>
   <ul>
     <li><a href="?mod=facebook&mod_action=admin_friend_picker">
-      <?php echo I18N::translate("Import from your Facebook friends"); ?>
-    </a></li>
+        <?php echo I18N::translate("Import from your Facebook friends"); ?>
+      </a></li>
   </ul>
-<p><input type="submit" name="savePreapproved" value="<?php echo I18N::translate('Save'); ?>"></p>
-<table id="preapproved">
-  <thead>
-    <tr>
-      <th rowspan="2"><?php echo I18N::translate('Facebook Account'); ?></th>
-      <?php
+  <p><input type="submit" name="savePreapproved" value="<?php echo I18N::translate('Save'); ?>"></p>
+  <table id="preapproved">
+    <thead>
+      <tr>
+        <th rowspan="2"><?php echo I18N::translate('Facebook Account'); ?></th>
+        <?php
         $index = 0;
-        foreach (Tree::getAll() as $tree) {
-          echo '<th colspan="3" class="'.($index++ % 2 ? 'odd' : 'even').'">', $tree->getNameHtml(), '</th>';
+        foreach ($all_trees as $tree) {
+          echo '<th colspan="3" class="' . ($index++ % 2 ? 'odd' : 'even') . '">', $tree->getNameHtml(), '</th>';
         }
-      ?>
-    </tr>
-    <tr>
-      <?php
-      $index = 0;
-      foreach (Tree::getAll() as $tree) {
-        $class = ($index++ % 2 ? 'odd' : 'even');
-?>
-      <th class="<?php echo $class; ?>"><?php echo I18N::translate('Default individual'), FunctionsPrint::helpLink('default_individual'); ?></th>
-      <th class="<?php echo $class; ?>"><?php echo I18N::translate('Individual record'), FunctionsPrint::helpLink('useradmin_gedcomid'); ?></th>
-      <th class="<?php echo $class; ?>"><?php echo I18N::translate('Role'), FunctionsPrint::helpLink('role'); ?></th>
+        ?>
+      </tr>
+      <tr>
+        <?php
+        $index = 0;
+        foreach ($all_trees as $tree) {
+          $class = ($index++ % 2 ? 'odd' : 'even');
+        ?>
+          <th class="<?php echo $class; ?>"><?php echo I18N::translate('Default individual'), FunctionsPrint::helpLink('default_individual'); ?></th>
+          <th class="<?php echo $class; ?>"><?php echo I18N::translate('Individual record'), FunctionsPrint::helpLink('useradmin_gedcomid'); ?></th>
+          <th class="<?php echo $class; ?>"><?php echo I18N::translate('Role'), FunctionsPrint::helpLink('role'); ?></th>
 
-      <?php } ?>
-    </tr>
-  </thead>
-  <tbody>
-    <tr class="preapproved_row_add">
-      <td><input type="text" name="preApproved_new_facebook_username" <?php echo $usernameValidationAttrs; ?> size="18"/></td>
-      <?php
+        <?php } ?>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="preapproved_row_add">
+        <td><input type="text" name="preApproved_new_facebook_username" <?php echo $usernameValidationAttrs; ?> size="18" /></td>
+        <?php
         $index = 0;
         foreach (Tree::getAll() as $tree) {
           $class = ($index++ % 2 ? 'odd' : 'even');
-          echo '<td class="'.$class.'">',
-          $this->indiField('preApproved[new]['.$tree->getTreeId().'][rootid]',
-                           '', $tree->getNameUrl()), '</td>',
-          '<td class="'.$class.'">',
-          $this->indiField('preApproved[new]['.$tree->getTreeId().'][gedcomid]',
-                           '', $tree->getNameUrl()), '</td>',
-          '<td class="'.$class.'">',
-          FunctionsEdit::selectEditControl('preApproved[new]['.$tree->getTreeId().'][canedit]',
-                              $this->get_edit_options(), NULL, NULL), '</td>';
+          echo '<td class="' . $class . '">',
+          $this->indiField(
+            'preApproved[new][' . $tree->getTreeId() . '][rootid]',
+            '',
+            $tree->getNameUrl()
+          ), '</td>',
+          '<td class="' . $class . '">',
+          $this->indiField(
+            'preApproved[new][' . $tree->getTreeId() . '][gedcomid]',
+            '',
+            $tree->getNameUrl()
+          ), '</td>',
+          '<td class="' . $class . '">',
+          FunctionsEdit::selectEditControl(
+            'preApproved[new][' . $tree->getTreeId() . '][canedit]',
+            $this->get_edit_options(),
+            NULL,
+            NULL
+          ), '</td>';
         }
-      ?>
-    </tr>
-    <?php
+        ?>
+      </tr>
+      <?php
       if (!empty($preApproved)) {
         ksort($preApproved);
         foreach ($preApproved as $fbUsername => $details) {
@@ -171,43 +185,55 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
           $index = 0;
           foreach (Tree::getAll() as $tree) {
             $class = ($index++ % 2 ? 'odd' : 'even');
-            echo '<td class="'.$class.'">',
-            $this->indiField('preApproved['.$fbUsername.']['.$tree->getTreeId().'][rootid]',
-                             @$details[$tree->getTreeId()]['rootid'], $tree->getNameUrl()), '</td>',
-            '<td class="'.$class.'">',
-            $this->indiField('preApproved['.$fbUsername.']['.$tree->getTreeId().'][gedcomid]',
-                             @$details[$tree->getTreeId()]['gedcomid'], $tree->getNameUrl()), '</td>',
-            '<td class="'.$class.'">',
-            FunctionsEdit::selectEditControl('preApproved['.$fbUsername.']['.$tree->getTreeId().'][canedit]',
-                                $this->get_edit_options(), NULL, @$details[$tree->getTreeId()]['canedit']),
-	    '</td>';
+            echo '<td class="' . $class . '">',
+            $this->indiField(
+              'preApproved[' . $fbUsername . '][' . $tree->getTreeId() . '][rootid]',
+              @$details[$tree->getTreeId()]['rootid'],
+              $tree->getNameUrl()
+            ), '</td>',
+            '<td class="' . $class . '">',
+            $this->indiField(
+              'preApproved[' . $fbUsername . '][' . $tree->getTreeId() . '][gedcomid]',
+              @$details[$tree->getTreeId()]['gedcomid'],
+              $tree->getNameUrl()
+            ), '</td>',
+            '<td class="' . $class . '">',
+            FunctionsEdit::selectEditControl(
+              'preApproved[' . $fbUsername . '][' . $tree->getTreeId() . '][canedit]',
+              $this->get_edit_options(),
+              NULL,
+              @$details[$tree->getTreeId()]['canedit']
+            ),
+            '</td>';
           }
           echo '
-      <td><button name="deletePreapproved" value="'.$fbUsername.'" class="icon-delete"></button></td>
+      <td><button name="deletePreapproved" value="' . $fbUsername . '" class="icon-delete"></button></td>
     </tr>';
         }
       }
-    ?>
-  </tbody>
-</table>
+      ?>
+    </tbody>
+  </table>
 </form>
 <script>
-function paste_id(value) {
-  pastefield.value=value;
-}
+  function paste_id(value) {
+    pastefield.value = value;
+  }
 
-function update_check() {
+  function update_check() {
     $.ajax("<?php echo WT_FACEBOOK_UPDATE_CHECK_URL; ?>", {
-        headers: { "Accept": "application/vnd.github.v3.raw+json" },
-        dataType: "text"
+      headers: {
+        "Accept": "application/vnd.github.v3.raw+json"
+      },
+      dataType: "text"
     }).done(function(data) {
-        var versions = JSON.parse(data);
-        if (versions.latest_version > "<?php echo WT_FACEBOOK_VERSION; ?>") {
-            var updateText = "<?php echo Filter::escapeJs(I18N::translate('An update to this module is available: ')); ?>";
-           $("#updateBanner").html(updateText + "<a href='" + versions.website + "'>" + versions.latest_version + " (" + versions.latest_release_date + ")</a>");
-        }
+      var versions = JSON.parse(data);
+      if (versions.latest_version > "<?php echo WT_FACEBOOK_VERSION; ?>") {
+        var updateText = "<?php echo Filter::escapeJs(I18N::translate('An update to this module is available: ')); ?>";
+        $("#updateBanner").html(updateText + "<a href='" + versions.website + "'>" + versions.latest_version + " (" + versions.latest_release_date + ")</a>");
+      }
     });
-}
+  }
 
-window.addEventListener("load", update_check);
+  window.addEventListener("load", update_check);
 </script>

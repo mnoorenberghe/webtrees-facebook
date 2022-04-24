@@ -133,7 +133,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     }
 
     private function admin() {
-        $preApproved = unserialize($this->getSetting('preapproved'));
+        $preApproved = unserialize($this->getPreference('preapproved'));
 
         if (Filter::post('saveAPI') && Filter::checkCsrf()) {
             $this->setSetting('app_id', Filter::post('app_id', WT_REGEX_ALPHANUM));
@@ -246,9 +246,9 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     }
 
     private function isSetup() {
-        $app_id = $this->getSetting('app_id');
-        $app_secret = $this->getSetting('app_secret');
-        $this->hideStandardForms = $this->getSetting('hide_standard_forms', false);
+        $app_id = $this->getPreference('app_id');
+        $app_secret = $this->getPreference('app_secret');
+        $this->hideStandardForms = $this->getPreference('hide_standard_forms', false);
 
         return !empty($app_id) && !empty($app_secret);
     }
@@ -268,8 +268,8 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             exit;
         }
 
-        $app_id = $this->getSetting('app_id');
-        $app_secret = $this->getSetting('app_secret');
+        $app_id = $this->getPreference('app_id');
+        $app_secret = $this->getPreference('app_secret');
         $connect_url = $this->getConnectURL($url);
 
         if (!$app_id || !$app_secret) {
@@ -402,7 +402,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');",
                                          PageController::JS_PRIORITY_LOW);
 
-        $preApproved = unserialize($this->getSetting('preapproved'));
+        $preApproved = unserialize($this->getPreference('preapproved'));
 
         if (Filter::postArray('preApproved') && Filter::checkCsrf()) {
             $roleRows = Filter::postArray('preApproved');
@@ -529,7 +529,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
      * @param string $url          (optional) URL to redirect to afterwards.
      */
     private function login_or_register(&$facebookUser, $url='') {
-        if ($this->getSetting('require_verified', 1) && empty($facebookUser->verified)) {
+        if ($this->getPreference('require_verified', 1) && empty($facebookUser->verified)) {
             $this->error_page(I18N::translate('Only verified Facebook accounts are authorized. Please verify your account on Facebook and then try again'));
         }
 
@@ -582,7 +582,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             // Generate a random password since the user shouldn't need it and can always reset it.
             $password = md5(uniqid(rand(), TRUE));
             $hashcode = md5(uniqid(rand(), true));
-            $preApproved = unserialize($this->getSetting('preapproved'));
+            $preApproved = unserialize($this->getPreference('preapproved'));
             $verifiedByAdmin = isset($preApproved[$username]);
 
             if ($user = $this->createUser($wt_username,
@@ -751,7 +751,7 @@ $(document).ready(function() {
         }
 
         // Otherwise, look in the list of pre-approved users.
-        $preApproved = unserialize($this->getSetting('preapproved'));
+        $preApproved = unserialize($this->getPreference('preapproved'));
         if (empty($preApproved)) {
             return NULL;
         }

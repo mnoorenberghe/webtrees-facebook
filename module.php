@@ -141,14 +141,14 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     private function admin() {
         $preApproved = unserialize($this->getPreference('preapproved'));
 
-        if (Filter::post('saveAPI') && Filter::checkCsrf()) {
+        if (Filter::post('saveAPI')) {
             $this->setPreference('app_id', Filter::post('app_id', WT_REGEX_ALPHANUM));
             $this->setPreference('app_secret', Filter::post('app_secret', WT_REGEX_ALPHANUM));
             $this->setPreference('require_verified', Filter::post('require_verified', WT_REGEX_INTEGER, false));
             $this->setPreference('hide_standard_forms', Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
             Log::addConfigurationLog("Facebook: API settings changed");
             FlashMessages::addMessage(I18N::translate('Settings saved'));
-        } else if (Filter::post('addLink') && Filter::checkCsrf()) {
+        } else if (Filter::post('addLink')) {
             $user_id = Filter::post('user_id', WT_REGEX_INTEGER);
             $facebook_username = $this->cleanseFacebookUserID(Filter::post('facebook_username', WT_REGEX_USERNAME));
             if ($user_id && $facebook_username && !$this->get_wt_user_id_from_facebook_user_id($facebook_username)) {
@@ -164,7 +164,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             } else {
                 FlashMessages::addMessage(I18N::translate('The user could not be linked'));
             }
-        } else if (Filter::post('deleteLink') && Filter::checkCsrf()) {
+        } else if (Filter::post('deleteLink')) {
             $user_id = Filter::post('deleteLink', WT_REGEX_INTEGER);
             if ($user_id) {
                 $user = User::find($user_id);
@@ -174,7 +174,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             } else {
                 FlashMessages::addMessage(I18N::translate('The link could not be deleted'));
             }
-        } else if (Filter::post('savePreapproved') && Filter::checkCsrf()) {
+        } else if (Filter::post('savePreapproved')) {
             $table = Filter::post('preApproved');
             if ($facebook_username = $this->cleanseFacebookUserID(Filter::post('preApproved_new_facebook_username', WT_REGEX_USERNAME))) {
                 // Process additions
@@ -192,7 +192,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             $this->setPreference('preapproved', serialize($preApproved));
             Log::addConfigurationLog("Facebook: Pre-approved Facebook users changed");
             FlashMessages::addMessage(I18N::translate('Changes to pre-approved users saved'));
-        } else if (Filter::post('deletePreapproved') && Filter::checkCsrf()) {
+        } else if (Filter::post('deletePreapproved')) {
             $facebook_username = trim(Filter::post('deletePreapproved', WT_REGEX_USERNAME));
             if ($facebook_username && isset($preApproved[$facebook_username])) {
                 unset($preApproved[$facebook_username]);
@@ -410,7 +410,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
 
         $preApproved = unserialize($this->getPreference('preapproved'));
 
-        if (Filter::postArray('preApproved') && Filter::checkCsrf()) {
+        if (Filter::postArray('preApproved')) {
             $roleRows = Filter::postArray('preApproved');
             $fbUsernames = Filter::postArray('facebook_username', WT_REGEX_USERNAME);
             foreach($fbUsernames as $facebook_username) {

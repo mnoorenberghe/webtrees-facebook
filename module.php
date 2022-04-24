@@ -144,7 +144,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
      *
      * @return ResponseInterface
      */
-    public function getAdminAction(ServerRequestInterface $request): ResponseInterface
+    public function postAdminAction(ServerRequestInterface $request): ResponseInterface
     {
         $preApproved = unserialize($this->getPreference('preapproved'));
 
@@ -211,12 +211,11 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             }
         }
 
-        $controller = new PageController();
-        $controller
-            ->restrictAccess(Auth::isAdmin())
-            ->setPageTitle($this->getTitle())
-            ->pageHeader();
+        return $this->getAdminAction($request);
+    }
 
+    public function getAdminAction(ServerRequestInterface $request): ResponseInterface
+    {
         $linkedUsers = array();
         $unlinkedUsers = array();
         $users = $this->get_users_with_module_settings();
@@ -230,7 +229,17 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
 
         $unlinkedOptions = $this->user_options($unlinkedUsers);
 
-        require 'templates/admin.php';
+        $this->layout = 'layouts/administration';
+
+        return $this->viewResponse('../../modules_v4/facebook/templates/admin', [
+            'title'               => $this->title(),
+            'app_id'              => $this->getPreference('app_id', ''),
+            'app_secret'          => $this->getPreference('app_secret', ''),
+            'require_verified'    => $this->getPreference('require_verified', 1),
+            'hide_standard_forms' => $this->getPreference('hide_standard_forms', 0),
+            'unlinkedOptions'     => $unlinkedOptions,
+            'all_trees'           => $this->tree_service->all(),
+        ]);
     }
 
     private function appendPreapproved(&$preApproved, $facebook_username, $row) {
@@ -439,11 +448,6 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         if ($friendsResponse === FALSE) {
             $this->error_page(I18N::translate("Could not fetch your friends from Facebook. Note that this feature won't work for Facebook Apps created after 2014-04-30 due to a Facebook policy change."));
         }
-
-        $controller
-            ->restrictAccess(Auth::isAdmin())
-            ->setPageTitle($this->getTitle())
-            ->pageHeader();
 
         $friends = json_decode($friendsResponse);
         if (empty($friends->data)) {

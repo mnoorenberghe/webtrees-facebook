@@ -42,7 +42,7 @@
 
 #admin_content [class^="icon-delete"],
 #admin_content [class*=" icon-delete"] {
-    background: url(images/icon_delete.png) 50% 50%;
+    background: url(resources/css/icons/delete.png) 50% 50%;
 }
 
 #admin_content [class^="icon-delete"]:hover,
@@ -93,7 +93,7 @@
 }
 
 #facebook-login-button {
-    background-image: url(images/f_logo.png);
+    /* background-image: url(images/f_logo.png); */
     background-position: 0.5em 50%;
     background-repeat: no-repeat;
     background-size: 2em;

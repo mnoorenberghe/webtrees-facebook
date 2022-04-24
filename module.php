@@ -718,6 +718,8 @@ $(document).ready(function() {
 
         $result .= "<script src=\"".$this->assetUrl('facebook.js')."\"></script>";
 
+        $result .= "<style>#facebook-login-button { background-image: url(" . $this->assetUrl('images/f_logo.png') . "); }</style>";
+
           // Use the Facebook profile photo if there isn't an existing photo
           if (!empty($controller->record) && method_exists($controller->record, 'findHighlightedMedia')
               && !$controller->record->findHighlightedMedia()) {

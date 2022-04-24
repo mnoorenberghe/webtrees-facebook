@@ -23,7 +23,7 @@ function facebook_getParameterByName(name) {
     return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
 
-$(document).ready(function init_facebook() {
+$(function init_facebook() {
     var fbForm = $(
     '<div id="facebook-login-box" style="display: inline-block">' +
     '<form id="login-form" action="module.php?mod=facebook&mod_action=connect" method="post">' +
@@ -38,5 +38,5 @@ $(document).ready(function init_facebook() {
     fbForm.find("#login-form")[0].addEventListener("submit", function(evt) {
         this.timediff.value = (new Date()).getTimezoneOffset() * 60;
     });
-    $("#login-form, #register-form").before(fbForm);
+    $("form[name='login-form'], form.wt-page-options-login, form.wt-page-options-register").before(fbForm);
 });

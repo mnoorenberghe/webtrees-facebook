@@ -109,8 +109,8 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
     <tr class="' . $class . '">
       <td><a href="admin_users.php?filter=' . $user->user_name . '">' . $user->user_name . '</a></td>
       <td><a href="admin_users.php?filter=' . $user->user_name . '">' . $user->real_name . '</a></td>
-      <td>' . $this->facebookProfileLink($user->facebook_username) . '</td>
-      <td style="text-align: center;"><button name="deleteLink" value="' . $user_id . '" class="icon-delete" formnovalidate="formnovalidate" style="border:none;"></button></td>
+      <td>' . view('../../modules_v4/facebook/templates/facebook-profile-link', ['api_dir' => $fb_api_dir, 'user_id' => $user->facebook_username]) . '</td>
+      <td style="text-align: center;"><button name="deleteLink" value="' . $user_id . '" class="icon-delete" formnovalidate="formnovalidate" style="border:none;">x</button></td>
     </tr>';
         }
       }
@@ -195,7 +195,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
         foreach ($preApproved as $fbUsername => $details) {
           echo '
 <tr>
-      <td nowrap="nowrap">' . $this->facebookProfileLink($fbUsername) . '</td>';
+      <td nowrap="nowrap">' . view('../../modules_v4/facebook/templates/facebook-profile-link', ['api_dir' => $fb_api_dir, 'user_id' => $fbUsername]) . '</td>';
           $index = 0;
           foreach ($all_trees as $tree) {
             $class = ($index++ % 2 ? 'odd' : 'even');

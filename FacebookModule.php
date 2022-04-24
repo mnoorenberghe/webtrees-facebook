@@ -417,10 +417,6 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         return $statement->execute(array(self::user_setting_facebook_username, $this->cleanseFacebookUserID($fbUserId)))->fetchOne();
     }
 
-    private function facebookProfileLink($user_id) {
-        return '<a href="https://www.facebook.com/'.$user_id.'"><img src="https://graph.facebook.com/' . self::api_dir .$user_id.'/picture?type=square" height="25" width="25"/>&nbsp;'.$user_id.'</a>';
-    }
-
     private function cleanseFacebookUserID($user_id) {
         // This is just a numeric string
         return $user_id;

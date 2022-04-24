@@ -16,12 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-if (!defined('WT_WEBTREES')) {
-    header('HTTP/1.0 403 Forbidden');
-    exit;
-}
-
-define('WT_FACEBOOK_VERSION', "v1.0-beta.8");
+define('WT_FACEBOOK_VERSION', "v2.1-alpha.0");
 define('WT_FACEBOOK_UPDATE_CHECK_URL', "https://api.github.com/repos/mnoorenberghe/webtrees-facebook/contents/versions.json?ref=gh-pages");
 define('WT_REGEX_ALPHA', '[a-zA-Z]+');
 define('WT_REGEX_ALPHANUM', '[a-zA-Z0-9]+');
@@ -43,9 +38,12 @@ use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\User;
 use Fisharebest\Webtrees\Module\AbstractModule;
 use Fisharebest\Webtrees\Module\ModuleConfigInterface;
+use Fisharebest\Webtrees\Module\ModuleConfigTrait;
+use Fisharebest\Webtrees\Module\ModuleCustomInterface;
+use Fisharebest\Webtrees\Module\ModuleCustomTrait;
 use Fisharebest\Webtrees\Module\ModuleMenuInterface;
 
-class FacebookModule extends AbstractModule implements ModuleConfigInterface, ModuleMenuInterface {
+class FacebookModule extends AbstractModule implements ModuleCustomInterface, ModuleConfigInterface, ModuleMenuInterface {
     const scope = 'user_birthday,user_hometown,user_location,email,user_gender,user_link';
     const user_fields = 'id,birthday,email,name,first_name,last_name,gender,hometown,link,locale,timezone,updated_time,verified';
     const user_setting_facebook_username = 'facebook_username';
@@ -54,23 +52,60 @@ class FacebookModule extends AbstractModule implements ModuleConfigInterface, Mo
 
     private $hideStandardForms = false;
 
-    public function __construct() {
-        parent::__construct('facebook');
+    // For every module interface that is implemented, the corresponding trait *should* also use be used.
+    use ModuleConfigTrait;
+    use ModuleCustomTrait;
+
+    // Implement ModuleInterface
+    public function title(): string {
+        return /* I18N: Name of the module */ I18N::translate('Facebook');
     }
 
-    // Implement WT_Module_Config
-    public function getConfigLink() {
-        return 'module.php?mod='.$this->getName().'&amp;mod_action=admin';
-    }
-
-    // Extend WT_Module
-    public function getTitle() {
-        return /* I18N: Name of a module */ I18N::translate('Facebook');
-    }
-
-    // Extend WT_Module
-    public function getDescription() {
+    // Implement ModuleInterface
+    public function description(): string {
         return /* I18N: Description of the "Facebook" module */ I18N::translate('Allow users to login with Facebook.');
+    }
+
+    /**
+     * The person or organisation who created this module.
+     *
+     * @return string
+     */
+    public function customModuleAuthorName(): string
+    {
+        return 'Matt N.';
+    }
+
+    /**
+     * The version of this module.
+     *
+     * @return string
+     */
+    public function customModuleVersion(): string
+    {
+        return WT_FACEBOOK_VERSION;
+    }
+
+    /**
+     * A URL that will provide the latest version of this module.
+     *
+     * @return string
+     */
+    /* TODO
+    public function customModuleLatestVersionUrl(): string
+    {
+        return 'https://github.com/mnoorenberghe/webtrees-custom-xref-prefix/raw/main/latest-version.txt';
+    }
+    */
+
+    /**
+     * Where to get support for this module.  Perhaps a github repository?
+     *
+     * @return string
+     */
+    public function customModuleSupportUrl(): string
+    {
+        return 'https://github.com/mnoorenberghe/webtrees-facebook/issues/';
     }
 
     // Extend WT_Module

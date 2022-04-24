@@ -165,7 +165,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
         <td><input type="text" name="preApproved_new_facebook_username" <?php echo $usernameValidationAttrs; ?> size="18" /></td>
         <?php
         $index = 0;
-        foreach (Tree::getAll() as $tree) {
+        foreach ($all_trees as $tree) {
           $class = ($index++ % 2 ? 'odd' : 'even');
           echo '<td class="' . $class . '">',
           $this->indiField(
@@ -197,7 +197,7 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
 <tr>
       <td nowrap="nowrap">' . $this->facebookProfileLink($fbUsername) . '</td>';
           $index = 0;
-          foreach (Tree::getAll() as $tree) {
+          foreach ($all_trees as $tree) {
             $class = ($index++ % 2 ? 'odd' : 'even');
             echo '<td class="' . $class . '">',
             $this->indiField(

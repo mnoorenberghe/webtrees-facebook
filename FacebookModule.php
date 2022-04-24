@@ -16,6 +16,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+namespace WTFacebook;
+
 define('WT_FACEBOOK_VERSION', "v2.1-alpha.0");
 define('WT_FACEBOOK_UPDATE_CHECK_URL', "https://api.github.com/repos/mnoorenberghe/webtrees-facebook/contents/versions.json?ref=gh-pages");
 define('WT_REGEX_ALPHA', '[a-zA-Z]+');
@@ -43,6 +45,7 @@ use Fisharebest\Webtrees\Module\ModuleCustomInterface;
 use Fisharebest\Webtrees\Module\ModuleCustomTrait;
 use Fisharebest\Webtrees\Module\ModuleGlobalInterface;
 use Fisharebest\Webtrees\Module\ModuleGlobalTrait;
+use Fisharebest\Webtrees\Services\TreeService;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -55,6 +58,18 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     const api_dir = "v2.9/"; // TODO: make an admin preference so new installs can use this module.
 
     private $hideStandardForms = false;
+    private TreeService $tree_service;
+
+    /**
+     * FacebookModule constructor.
+     *
+     * @param TreeService   $tree_service
+     */
+    public function __construct(
+        TreeService $tree_service
+    ) {
+        $this->tree_service = $tree_service;
+    }
 
     // For every module interface that is implemented, the corresponding trait *should* also use be used.
     use ModuleConfigTrait;
@@ -771,7 +786,4 @@ $(document).ready(function() {
         }
         return NULL;
     }
-
 }
-
-return new FacebookModule;

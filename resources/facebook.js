@@ -33,7 +33,7 @@ $(document).ready(function init_facebook() {
     '<button id="facebook-login-button">' + FACEBOOK_LOGIN_TEXT + '</button>' +
     '</form>' +
     '</div>');
-    fbForm.find("#facebook_connect_csrf").attr('value', WT_CSRF_TOKEN);
+    fbForm.find("#facebook_connect_csrf").attr('value', $('meta[name=csrf]').attr('content'));
     fbForm.find("#facebook_return_url").attr('value', facebook_getParameterByName('url'));
     fbForm.find("#login-form")[0].addEventListener("submit", function(evt) {
         this.timediff.value = (new Date()).getTimezoneOffset() * 60;

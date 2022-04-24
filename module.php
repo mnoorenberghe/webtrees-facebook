@@ -41,9 +41,10 @@ use Fisharebest\Webtrees\Module\ModuleConfigInterface;
 use Fisharebest\Webtrees\Module\ModuleConfigTrait;
 use Fisharebest\Webtrees\Module\ModuleCustomInterface;
 use Fisharebest\Webtrees\Module\ModuleCustomTrait;
-use Fisharebest\Webtrees\Module\ModuleMenuInterface;
+use Fisharebest\Webtrees\Module\ModuleGlobalInterface;
+use Fisharebest\Webtrees\Module\ModuleGlobalTrait;
 
-class FacebookModule extends AbstractModule implements ModuleCustomInterface, ModuleConfigInterface, ModuleMenuInterface {
+class FacebookModule extends AbstractModule implements ModuleCustomInterface, ModuleConfigInterface, ModuleGlobalInterface {
     const scope = 'user_birthday,user_hometown,user_location,email,user_gender,user_link';
     const user_fields = 'id,birthday,email,name,first_name,last_name,gender,hometown,link,locale,timezone,updated_time,verified';
     const user_setting_facebook_username = 'facebook_username';
@@ -55,6 +56,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     // For every module interface that is implemented, the corresponding trait *should* also use be used.
     use ModuleConfigTrait;
     use ModuleCustomTrait;
+    use ModuleGlobalTrait;
 
     // Implement ModuleInterface
     public function title(): string {
@@ -64,6 +66,10 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     // Implement ModuleInterface
     public function description(): string {
         return /* I18N: Description of the "Facebook" module */ I18N::translate('Allow users to login with Facebook.');
+    }
+
+    public function resourcesFolder(): string {
+        return __DIR__ . '/resources/';
     }
 
     /**
@@ -399,7 +405,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         $controller = new PageController();
 
         $controller->addInlineJavaScript("
-            $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');",
+            $('head').append('<link rel=\"stylesheet\" href=\"" . $this->assetUrl("facebook.css") ."\" />');",
                                          PageController::JS_PRIORITY_LOW);
 
         $preApproved = unserialize($this->getPreference('preapproved'));
@@ -693,35 +699,24 @@ $(document).ready(function() {
             . $this->print_findindi_link($field, '', $gedcomTitle);
     }
 
-    /* Inject JS into some pages (via a menu) to show the Facebook login button */
+    /* Inject JS into some pages to show the Facebook login button */
 
-    // Implement WT_Module_Menu
-    public function defaultMenuOrder() {
-        return 999;
-    }
+    // Implement ModuleGlobalInterface
+    public function bodyContent(): string {
+        global $THUMBNAIL_WIDTH;
 
-    // Implement WT_Module_Menu
-    public function getMenu() {
-        // We don't actually have a menu - this is just a convenient "hook" to execute
-        // code at the right time during page execution
-        global $controller, $THUMBNAIL_WIDTH;
-
+        $result = '';
         if (!$this->isSetup()) {
-            return null;
+            return $result;
         }
 
-        $controller->addExternalJavascript(WT_MODULES_DIR . $this->getName() . '/facebook.js?v=' . WT_FACEBOOK_VERSION);
-        /* Stylesheets added by addExternalStylesheet are never output
-        if (method_exists($controller, 'addExternalStylesheet')) {
-          $controller->addExternalStylesheet(WT_MODULES_DIR . $this->getName() . '/facebook.css?v=' . WT_FACEBOOK_VERSION); // Only in 1.3.3+
-        } else {
-         */
-          $controller->addInlineJavaScript("
-            var FACEBOOK_LOGIN_TEXT = '" . addslashes(I18N::translate('Login with Facebook')) . "';
-            $('head').append('<link rel=\"stylesheet\" href=\"".WT_MODULES_DIR . $this->getName() . "/facebook.css?v=" . WT_FACEBOOK_VERSION."\" />');" .
-              ($this->hideStandardForms ? '$(document).ready(function() {$("#login-form[name=\'login-form\'], #register-form").hide();});' : ""),
-            PageController::JS_PRIORITY_NORMAL);
-        //}
+        $result .= "<script>
+        var FACEBOOK_LOGIN_TEXT = '" . addslashes(I18N::translate('Login with Facebook')) . "';
+        $('head').append('<link rel=\"stylesheet\" href=\"". $this->assetUrl("facebook.css") . "\" />');" .
+        ($this->hideStandardForms ? '$(document).ready(function() {$("#login-form[name=\'login-form\'], #register-form").hide();});' : "");
+        $result .= "</script>";
+
+        $result .= "<script src=\"".$this->assetUrl('facebook.js')."\"></script>";
 
           // Use the Facebook profile photo if there isn't an existing photo
           if (!empty($controller->record) && method_exists($controller->record, 'findHighlightedMedia')
@@ -739,7 +734,7 @@ $(document).ready(function() {
           }
 
 
-        return null;
+        return $result;
     }
 
     public function getFacebookUsernameForINDI($indi) {

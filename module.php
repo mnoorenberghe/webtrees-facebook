@@ -142,10 +142,10 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         $preApproved = unserialize($this->getPreference('preapproved'));
 
         if (Filter::post('saveAPI') && Filter::checkCsrf()) {
-            $this->setSetting('app_id', Filter::post('app_id', WT_REGEX_ALPHANUM));
-            $this->setSetting('app_secret', Filter::post('app_secret', WT_REGEX_ALPHANUM));
-            $this->setSetting('require_verified', Filter::post('require_verified', WT_REGEX_INTEGER, false));
-            $this->setSetting('hide_standard_forms', Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
+            $this->setPreference('app_id', Filter::post('app_id', WT_REGEX_ALPHANUM));
+            $this->setPreference('app_secret', Filter::post('app_secret', WT_REGEX_ALPHANUM));
+            $this->setPreference('require_verified', Filter::post('require_verified', WT_REGEX_INTEGER, false));
+            $this->setPreference('hide_standard_forms', Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
             Log::addConfigurationLog("Facebook: API settings changed");
             FlashMessages::addMessage(I18N::translate('Settings saved'));
         } else if (Filter::post('addLink') && Filter::checkCsrf()) {
@@ -157,7 +157,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                 if (isset($preApproved[$facebook_username])) {
                     // Delete a pre-approval for the Facebook username.
                     unset($preApproved[$facebook_username]);
-                    $this->setSetting('preapproved', serialize($preApproved));
+                    $this->setPreference('preapproved', serialize($preApproved));
                 }
                 Log::addConfigurationLog("Facebook: User $user_id linked to Facebook user $facebook_username");
                 FlashMessages::addMessage(I18N::translate('User %1$s linked to Facebook user %2$s', $user_id, $facebook_username));
@@ -180,7 +180,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                 // Process additions
                 $row = $table['new'];
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
-                $this->setSetting('preapproved', serialize($preApproved));
+                $this->setPreference('preapproved', serialize($preApproved));
                 Log::addConfigurationLog("Facebook: Pre-approved Facebook user: $facebook_username");
                 FlashMessages::addMessage(I18N::translate('Pre-approved user "%s" added', $facebook_username));
             }
@@ -189,14 +189,14 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             foreach($table as $facebook_username => $row) {
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
             }
-            $this->setSetting('preapproved', serialize($preApproved));
+            $this->setPreference('preapproved', serialize($preApproved));
             Log::addConfigurationLog("Facebook: Pre-approved Facebook users changed");
             FlashMessages::addMessage(I18N::translate('Changes to pre-approved users saved'));
         } else if (Filter::post('deletePreapproved') && Filter::checkCsrf()) {
             $facebook_username = trim(Filter::post('deletePreapproved', WT_REGEX_USERNAME));
             if ($facebook_username && isset($preApproved[$facebook_username])) {
                 unset($preApproved[$facebook_username]);
-                $this->setSetting('preapproved', serialize($preApproved));
+                $this->setPreference('preapproved', serialize($preApproved));
                 Log::addConfigurationLog("Facebook: Pre-approved Facebook user deleted: $facebook_username");
                 FlashMessages::addMessage(I18N::translate('Pre-approved user "%s" deleted', $facebook_username));
             } else {
@@ -417,7 +417,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                 $facebook_username = $this->cleanseFacebookUserID($facebook_username);
                 $this->appendPreapproved($preApproved, $facebook_username, $roleRows);
             }
-            $this->setSetting('preapproved', serialize($preApproved));
+            $this->setPreference('preapproved', serialize($preApproved));
             FlashMessages::addMessage(I18N::translate('Users successfully imported from Facebook'));
             header("Location: module.php?mod=" . $this->getName() . "&mod_action=admin");
             exit;
@@ -627,7 +627,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                     }
                     // Remove the pre-approval record
                     unset($preApproved[$username]);
-                    $this->setSetting('preapproved', serialize($preApproved));
+                    $this->setPreference('preapproved', serialize($preApproved));
                 }
 
                 // We need jQuery below

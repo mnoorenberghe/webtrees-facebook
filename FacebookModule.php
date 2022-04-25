@@ -677,6 +677,7 @@ $(document).ready(function() {
         $result .= "<style>#facebook-login-button { background-image: url(" . $this->assetUrl('images/f_logo.png') . "); }</style>";
 
           // Use the Facebook profile photo if there isn't an existing photo
+          /* TODO:
           if (!empty($controller->record) && method_exists($controller->record, 'findHighlightedMedia')
               && !$controller->record->findHighlightedMedia()) {
               $fbUsername = $this->getFacebookUsernameForINDI($controller->record);
@@ -690,11 +691,13 @@ $(document).ready(function() {
                  '});');
               }
           }
+          */
 
 
         return $result;
     }
 
+    /* TODO
     public function getFacebookUsernameForINDI($indi) {
         global $WT_TREE;
 
@@ -716,4 +719,5 @@ $(document).ready(function() {
         }
         return NULL;
     }
+    */
 }

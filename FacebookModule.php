@@ -24,10 +24,11 @@ define('WT_REGEX_ALPHA', '[a-zA-Z]+');
 define('WT_REGEX_ALPHANUM', '[a-zA-Z0-9]+');
 define('WT_REGEX_USERNAME', '[^<>"%{};]+');
 
+use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Controller\PageController;
 use Fisharebest\Webtrees\Database;
-use Fisharebest\Webtrees\File;
+
 use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\Gedcom;
@@ -45,6 +46,7 @@ use Fisharebest\Webtrees\Module\ModuleGlobalInterface;
 use Fisharebest\Webtrees\Module\ModuleGlobalTrait;
 use Fisharebest\Webtrees\Services\TreeService;
 use Fisharebest\Webtrees\Services\UserService;
+use GuzzleHttp\Client;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\JoinClause;
 use Psr\Http\Message\ResponseInterface;
@@ -358,8 +360,11 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             // User has already authorized the app and we have a token so get their info.
             $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?fields=" . self::user_fields . "&access_token="
                 . Session::get('facebook_access_token');
-            $response = File::fetchUrl($graph_url);
-            if ($response === FALSE) {
+
+            $client = new Client();
+            $response = $client->get($graph_url);
+
+            if ($response->getStatusCode() !== StatusCodeInterface::STATUS_OK) {
                 Log::addErrorLog("Facebook: Access token is no longer valid");
                 // Clear the state and try again with a new token.
                 try {
@@ -372,7 +377,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                 exit;
             }
 
-            $user = json_decode($response);
+            $user = json_decode($response->getBody()->getContents());
             $this->login_or_register($user, $url);
         } else if (Session::has('facebook_state') && (Session::get('facebook_state') === $_REQUEST['state'])) {
             // User has already been redirected to login dialog.
@@ -381,12 +386,14 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                 . "client_id=" . $app_id . "&redirect_uri=" . urlencode($connect_url)
                 . "&client_secret=" . $app_secret . "&code=" . $code;
 
-            $response = File::fetchUrl($token_url);
-            if ($response === FALSE) {
+            $client = new Client();
+            $response = $client->get($token_url);
+
+            if ($response->getStatusCode() !== StatusCodeInterface::STATUS_OK) {
                 Log::addErrorLog("Facebook: Couldn't exchange the code for an access token");
                 $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
-            $params = json_decode($response);
+            $params = json_decode($response->getBody()->getContents());
             if (!isset($params->access_token)) {
                 Log::addErrorLog("Facebook: The access token was empty");
                 $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
@@ -395,11 +402,12 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             Session::put('facebook_access_token', $params->access_token);
             $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?fields=" . self::user_fields . "&access_token="
                 . Session::get('facebook_access_token');
-            $meResponse = File::fetchUrl($graph_url);
-            if ($meResponse === FALSE) {
+            $client = new Client();
+            $meResponse = $client->get($graph_url);
+            if ($meResponse->getStatusCode() !== StatusCodeInterface::STATUS_OK) {
                 $this->error_page(I18N::translate("Could not fetch your information from Facebook. Please try again."));
             }
-            $user = json_decode($meResponse);
+            $user = json_decode($meResponse->getBody()->getContents());
             $this->login_or_register($user, $url);
         } else {
             $this->error_page(I18N::translate("The state does not match. You may been tricked to load this page."));

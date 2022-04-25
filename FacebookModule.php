@@ -30,13 +30,10 @@ use Fisharebest\Webtrees\Database;
 use Fisharebest\Webtrees\File;
 use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\FlashMessages;
-use Fisharebest\Webtrees\Functions\FunctionsEdit;
-use Fisharebest\Webtrees\Functions\FunctionsPrint;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\Session;
 use Fisharebest\Webtrees\Site;
-use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\User;
 use Fisharebest\Webtrees\Validator;
 use Fisharebest\Webtrees\Module\AbstractModule;
@@ -641,31 +638,20 @@ $(document).ready(function() {
         }
     }
 
-    private function error_page($message) {
-        global $controller;
+    private function error_page($message)
+    {
         try {
             Session::forget('facebook_access_token');
             Session::forget('facebook_state');
-        } catch (Exception $e) { }
+        } catch (\Exception $e) {
+        }
 
         FlashMessages::addMessage($message);
 
-        $controller = new PageController();
-        $controller
-            ->setPageTitle($this->getTitle())
-            ->pageHeader();
-        exit;
-    }
-
-    private function print_findindi_link($element_id, $indiname='', $gedcomTitle=WT_GEDURL) {
-        return '<a href="#" tabindex="-1"
-            onclick="findIndi(document.getElementById(\''.$element_id.'\'), document.getElementById(\''.$indiname.'\'), \''.$gedcomTitle.'\'); return false;"
-            class="icon-button_indi" title="'.I18N::translate('Find an individual').'"></a>';
-    }
-
-    private function indiField($field, $value='', $gedcomTitle=WT_GEDURL) {
-        return '<input type="text" size="5" name="'.$field.'" id="'.$field.'" value="'.htmlspecialchars($value).'"> '
-            . $this->print_findindi_link($field, '', $gedcomTitle);
+        return $this->viewResponse('layouts/administration', [
+            'title' => '',
+            'body' => '',
+        ]);
     }
 
     /* Inject JS into some pages to show the Facebook login button */

@@ -34,7 +34,6 @@ use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\Session;
 use Fisharebest\Webtrees\Site;
-use Fisharebest\Webtrees\User;
 use Fisharebest\Webtrees\Validator;
 use Fisharebest\Webtrees\Module\AbstractModule;
 use Fisharebest\Webtrees\Module\ModuleConfigInterface;
@@ -44,6 +43,7 @@ use Fisharebest\Webtrees\Module\ModuleCustomTrait;
 use Fisharebest\Webtrees\Module\ModuleGlobalInterface;
 use Fisharebest\Webtrees\Module\ModuleGlobalTrait;
 use Fisharebest\Webtrees\Services\TreeService;
+use Fisharebest\Webtrees\Services\UserService;
 use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\JoinClause;
 use Psr\Http\Message\ResponseInterface;
@@ -58,16 +58,20 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
 
     private $hideStandardForms = false;
     private TreeService $tree_service;
+    private UserService $user_service;
 
     /**
      * FacebookModule constructor.
      *
      * @param TreeService   $tree_service
+     * @param UserService   $user_service
      */
     public function __construct(
-        TreeService $tree_service
+        TreeService $tree_service,
+        UserService $user_service
     ) {
         $this->tree_service = $tree_service;
+        $this->user_service = $user_service;
     }
 
     // For every module interface that is implemented, the corresponding trait *should* also use be used.
@@ -181,7 +185,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             $user_id = $parsedBody->integer('user_id');
             $facebook_username = $this->cleanseFacebookUserID($parsedBody->string('facebook_username'));
             if ($user_id && $facebook_username && !$this->get_wt_user_id_from_facebook_user_id($facebook_username)) {
-                $user = User::find($user_id);
+                $user = $this->user_service->find($user_id);
                 $user->setPreference(self::user_setting_facebook_username, $facebook_username);
                 if (isset($preApproved[$facebook_username])) {
                     // Delete a pre-approval for the Facebook username.
@@ -196,7 +200,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         } else if ($parsedBody->string('deleteLink')) {
             $user_id = $parsedBody->integer('deleteLink');
             if ($user_id) {
-                $user = User::find($user_id);
+                $user = $this->user_service->find($user_id);
                 $user->deletePreference(self::user_setting_facebook_username);
                 Log::addConfigurationLog("Facebook: User $user_id unlinked from a Facebook user");
                 FlashMessages::addMessage(I18N::translate('User unlinked'));
@@ -439,13 +443,13 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     }
 
     private function getConnectURL($returnTo='') {
-        return WT_BASE_URL . "module.php?mod=" . $this->getName()
+        return WT_BASE_URL . "module.php?mod=" . $this->name()
             . "&mod_action=connect" . ($returnTo ? "&url=" . urlencode($returnTo) : ""); // Workaround FB bug where "&url=" (empty value) prevents OAuth
     }
 
     private function login($user_id) {
-        $user = User::find($user_id);
-        $user_name = $user->getUserName();
+        $user = $this->user_service->find($user_id);
+        $user_name = $user->userName();
 
         // Below copied from login.php
         $is_admin=$user->getPreference('canadmin');
@@ -474,23 +478,22 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     public function createUser($wt_username, $name, $email, $password, $hashcode, $verifiedByAdmin, $fb_user_id) {
         // From login.php:
         Log::addAuthenticationLog('User registration requested for: ' . $wt_username);
-        $user = User::create($wt_username, $name, $email, $password);
+        $user = $this->user_service->create($wt_username, $name, $email, $password);
         if (!$user) {
             return $user;
         }
 
-        $user
-            ->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUserID($fb_user_id))
-            ->setPreference('language',          WT_LOCALE)
-            ->setPreference('verified',          '1')
-            ->setPreference('verified_by_admin', $verifiedByAdmin ? '1' : '0')
-            ->setPreference('reg_timestamp',     date('U'))
-            ->setPreference('reg_hashcode',      $hashcode)
-            ->setPreference('contactmethod',     'messaging2')
-            ->setPreference('visibleonline',     '1')
-            ->setPreference('auto_accept',       '0')
-            ->setPreference('canadmin',          '0')
-            ->setPreference('sessiontime',       $verifiedByAdmin ? WT_TIMESTAMP : '0');
+        $user->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUserID($fb_user_id));
+        $user->setPreference('language',          WT_LOCALE);
+        $user->setPreference('verified',          '1');
+        $user->setPreference('verified_by_admin', $verifiedByAdmin ? '1' : '0');
+        $user->setPreference('reg_timestamp',     date('U'));
+        $user->setPreference('reg_hashcode',      $hashcode);
+        $user->setPreference('contactmethod',     'messaging2');
+        $user->setPreference('visibleonline',     '1');
+        $user->setPreference('auto_accept',       '0');
+        $user->setPreference('canadmin',          '0');
+        $user->setPreference('sessiontime',       $verifiedByAdmin ? WT_TIMESTAMP : '0');
 
         return $user;
     }
@@ -511,9 +514,9 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             if (!isset($facebookUser->email)) {
                 $this->error_page(I18N::translate('You must grant access to your email address via Facebook in order to use this website. Please uninstall the application on Facebook and try again.'));
             }
-            $user = User::findByIdentifier($facebookUser->email);
+            $user = $this->user_service->findByIdentifier($facebookUser->email);
             if ($user) {
-                $user_id = $user->getUserId();
+                $user_id = $user->id();
             }
         }
 
@@ -529,7 +532,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                     $message=I18N::translate('This account has not been approved.  Please wait for an administrator to approve it.');
                     break;
                 default:
-                    $user = User::find($user_id);
+                    $user = $this->user_service->find($user_id);
                     $user->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUserID($facebookUser->id));
                     // redirect to the homepage/$url
                     header('Location: ' . WT_BASE_URL . $url);
@@ -546,7 +549,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             $username = $this->cleanseFacebookUserID($facebookUser->id);
             $wt_username = substr($username, 0, 32); // Truncate the username to 32 characters to match the DB.
 
-            if (User::findByIdentifier($wt_username)) {
+            if ($this->user_service->findByIdentifier($wt_username)) {
                 // fallback to email as username since we checked above that a user with the email didn't exist.
                 $wt_username = $facebookUser->email;
                 $wt_username = substr($wt_username, 0, 32); // Truncate the username to 32 characters to match the DB.
@@ -586,7 +589,8 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                             // we are trying to give the permissions.
                             Database::prepare(
                                            "REPLACE INTO `##user_gedcom_setting` (user_id, gedcom_id, setting_name, setting_value) VALUES (?, ?, ?, LEFT(?, 255))"
-                                           )->execute(array($user->getUserId(),
+                            )->execute(array(
+                                $user->id(),
                                                             $gedcom,
                                                             $userPref,
                                                             $userGedcomSettings[$userPref]));
@@ -601,7 +605,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                 global $controller;
                 $controller = new PageController();
                 $controller
-                    ->setPageTitle($this->getTitle())
+                    ->setPageTitle($this->title())
                     ->pageHeader();
 
                 echo '<form id="verify-form" name="verify-form" method="post" action="', WT_LOGIN_URL, '" class="ui-autocomplete-loading" style="width:16px;height:16px;padding:0">';
@@ -702,7 +706,7 @@ $(document).ready(function() {
         global $WT_TREE;
 
         // If they have an account, look for the link on their user record.
-        if ($user = User::findByGenealogyRecord($indi)) {
+        if ($user = $this->user_service->findByGenealogyRecord($indi)) {
             return $user->getPreference(self::user_setting_facebook_username);
         }
 

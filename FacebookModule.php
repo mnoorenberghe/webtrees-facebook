@@ -27,7 +27,6 @@ define('WT_REGEX_USERNAME', '[^<>"%{};]+');
 use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Controller\PageController;
-use Fisharebest\Webtrees\Database;
 
 use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\FlashMessages;
@@ -440,10 +439,11 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     }
 
     private function get_wt_user_id_from_facebook_user_id($fbUserId) {
-        $statement = Database::prepare(
-                                    "SELECT SQL_CACHE user_id FROM `##user_setting` WHERE setting_name=? AND setting_value=?"
-                                   );
-        return $statement->execute(array(self::user_setting_facebook_username, $this->cleanseFacebookUserID($fbUserId)))->fetchOne();
+        return DB::table('user_setting')
+            ->select('user_id')
+            ->where('setting_name', '=', self::user_setting_facebook_username)
+            ->where('setting_value', '=', $this->cleanseFacebookUserID($fbUserId))
+            ->first();
     }
 
     private function cleanseFacebookUserID($user_id) {
@@ -596,13 +596,18 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                             // Use a direct DB query instead of $tree->setUserPreference since we
                             // can't get a reference to the WT_Tree since it checks permissions but
                             // we are trying to give the permissions.
-                            Database::prepare(
-                                           "REPLACE INTO `##user_gedcom_setting` (user_id, gedcom_id, setting_name, setting_value) VALUES (?, ?, ?, LEFT(?, 255))"
-                            )->execute(array(
-                                $user->id(),
-                                                            $gedcom,
-                                                            $userPref,
-                                                            $userGedcomSettings[$userPref]));
+                            // TODO: The above may no longer be true and it also invalidates a cache.
+                            DB::table('user_gedcom_setting')
+                            ->upsert(
+                                [
+                                    'user_id' => $user->id(),
+                                    'gedcom_id' => $gedcom,
+                                    'setting_name' => $userPref,
+                                    'setting_value' => $userGedcomSettings[$userPref]
+                                ],
+                                ['user_id', 'gedcom_id', 'setting_name'],
+                                ['setting_value']
+                            );
                         }
                     }
                     // Remove the pre-approval record

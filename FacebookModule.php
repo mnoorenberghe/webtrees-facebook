@@ -30,6 +30,7 @@ use Fisharebest\Webtrees\Database;
 use Fisharebest\Webtrees\File;
 use Fisharebest\Webtrees\Filter;
 use Fisharebest\Webtrees\FlashMessages;
+use Fisharebest\Webtrees\Gedcom;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\Session;
@@ -286,13 +287,13 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         $preApproved[$facebook_username] = array();
         foreach ($row as $gedcom => $settings) {
             $preApproved[$facebook_username][$gedcom] = array(
-                                                              'rootid' => array_key_exists('rootid', $settings)
-                                                                  ? filter_var($settings['rootid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' .  WT_REGEX_XREF . ')$/u')))
-                                                                  : NULL,
-                                                              'gedcomid' => array_key_exists('gedcomid', $settings)
-                                                                  ? filter_var(@$settings['gedcomid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_XREF . ')$/u')))
-                                                                  : NULL,
-                                                              'canedit' => filter_var($settings['canedit'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_ALPHA . ')$/u')))
+                'rootid' => array_key_exists('rootid', $settings)
+                ? filter_var($settings['rootid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' .  Gedcom::REGEX_XREF . ')$/u')))
+                    : NULL,
+                'gedcomid' => array_key_exists('gedcomid', $settings)
+                ? filter_var(@$settings['gedcomid'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . Gedcom::REGEX_XREF . ')$/u')))
+                    : NULL,
+                'canedit' => filter_var($settings['canedit'], FILTER_VALIDATE_REGEXP, array("options" => array("regexp" => '/^(' . WT_REGEX_ALPHA . ')$/u')))
             );
         }
     }
@@ -317,7 +318,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
 
         // Redirect to the homepage/$url if the user is already logged-in.
         if (Auth::check()) {
-            header('Location: ' . WT_BASE_URL . $url);
+            header('Location: ' . Validator::attributes($request)->string('base_url') . $url);
             exit;
         }
 
@@ -535,7 +536,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                     $user = $this->user_service->find($user_id);
                     $user->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUserID($facebookUser->id));
                     // redirect to the homepage/$url
-                    header('Location: ' . WT_BASE_URL . $url);
+                    header('Location: ' . Validator::attributes($request)->string('base_url') . $url);
                     return;
             }
             $this->error_page($message);
@@ -624,8 +625,8 @@ function verify_hash_success() {
 }
 
 function verify_hash_failure() {
-  alert("' . I18N::translate("There was an error verifying your account. Contact the site administrator if you are unable to access the site.")  . '");
-  window.location = "' . WT_BASE_URL . '";
+  alert("' . I18N::translate("There was an error verifying your account. Contact the site administrator if you are unable to access the site.")  .'");
+  window.location = "' . Validator::attributes($request)->string('base_url') . '";
 }
 $(document).ready(function() {
   $.post("' . WT_LOGIN_URL . '", $("#verify-form").serialize(), verify_hash_success).fail(verify_hash_failure);

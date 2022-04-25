@@ -36,6 +36,7 @@ use Fisharebest\Webtrees\Log;
 use Fisharebest\Webtrees\Session;
 use Fisharebest\Webtrees\Site;
 use Fisharebest\Webtrees\Validator;
+use Fisharebest\Webtrees\Contracts\UserInterface;
 use Fisharebest\Webtrees\Module\AbstractModule;
 use Fisharebest\Webtrees\Module\ModuleConfigInterface;
 use Fisharebest\Webtrees\Module\ModuleConfigTrait;
@@ -470,7 +471,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
 
             Session::put('locale', Auth::user()->getPreference('language'));
             Session::put('theme_id', Auth::user()->getPreference('theme'));
-            Auth::user()->setPreference('sessiontime', WT_TIMESTAMP);
+            Auth::user()->setPreference(UserInterface::PREF_TIMESTAMP_ACTIVE, (string) time());
             I18N::init(Auth::user()->getPreference('language'));
 
             return $user_id;
@@ -502,7 +503,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         $user->setPreference('visibleonline',     '1');
         $user->setPreference('auto_accept',       '0');
         $user->setPreference('canadmin',          '0');
-        $user->setPreference('sessiontime',       $verifiedByAdmin ? WT_TIMESTAMP : '0');
+        $user->setPreference(UserInterface::PREF_TIMESTAMP_ACTIVE, $verifiedByAdmin ? (string) time() : '0');
 
         return $user;
     }

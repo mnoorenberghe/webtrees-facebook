@@ -182,9 +182,9 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             $this->setPreference('hide_standard_forms', $parsedBody->integer('hide_standard_forms', false));
             Log::addConfigurationLog("Facebook: API settings changed");
             FlashMessages::addMessage(I18N::translate('Settings saved'));
-        } else if (Filter::post('addLink')) {
-            $user_id = Filter::post('user_id', WT_REGEX_INTEGER);
-            $facebook_username = $this->cleanseFacebookUserID(Filter::post('facebook_username', WT_REGEX_USERNAME));
+        } else if ($parsedBody->string('addLink')) {
+            $user_id = $parsedBody->integer('user_id');
+            $facebook_username = $this->cleanseFacebookUserID($parsedBody->string('facebook_username'));
             if ($user_id && $facebook_username && !$this->get_wt_user_id_from_facebook_user_id($facebook_username)) {
                 $user = User::find($user_id);
                 $user->setPreference(self::user_setting_facebook_username, $facebook_username);
@@ -198,8 +198,8 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             } else {
                 FlashMessages::addMessage(I18N::translate('The user could not be linked'));
             }
-        } else if (Filter::post('deleteLink')) {
-            $user_id = Filter::post('deleteLink', WT_REGEX_INTEGER);
+        } else if ($parsedBody->string('deleteLink')) {
+            $user_id = $parsedBody->integer('deleteLink');
             if ($user_id) {
                 $user = User::find($user_id);
                 $user->deletePreference(self::user_setting_facebook_username);
@@ -208,9 +208,9 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             } else {
                 FlashMessages::addMessage(I18N::translate('The link could not be deleted'));
             }
-        } else if (Filter::post('savePreapproved')) {
-            $table = Filter::post('preApproved');
-            if ($facebook_username = $this->cleanseFacebookUserID(Filter::post('preApproved_new_facebook_username', WT_REGEX_USERNAME))) {
+        } else if ($parsedBody->string('savePreapproved')) {
+            $table = $parsedBody->array('preApproved');
+            if ($facebook_username = $this->cleanseFacebookUserID($parsedBody->string('preApproved_new_facebook_username'))) {
                 // Process additions
                 $row = $table['new'];
                 $this->appendPreapproved($preApproved, $facebook_username, $row);
@@ -226,8 +226,8 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             $this->setPreference('preapproved', serialize($preApproved));
             Log::addConfigurationLog("Facebook: Pre-approved Facebook users changed");
             FlashMessages::addMessage(I18N::translate('Changes to pre-approved users saved'));
-        } else if (Filter::post('deletePreapproved')) {
-            $facebook_username = trim(Filter::post('deletePreapproved', WT_REGEX_USERNAME));
+        } else if ($parsedBody->string('deletePreapproved')) {
+            $facebook_username = trim($parsedBody->string('deletePreapproved'));
             if ($facebook_username && isset($preApproved[$facebook_username])) {
                 unset($preApproved[$facebook_username]);
                 $this->setPreference('preapproved', serialize($preApproved));
@@ -306,8 +306,9 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         return !empty($app_id) && !empty($app_secret);
     }
 
-    private function connect() {
-        $url = Filter::post('url', NULL, Filter::get('url', NULL, ''));
+    private function connect($request)
+    {
+        $url = Validator::parsedBody($request)->string('url', Validator::queryParams($request)->string('url', ''));
         // If we’ve clicked login from the login page, we don’t want to go back there.
         if (strpos($url, 'login.php') === 0
             || (strpos($url, 'mod=facebook') !== false
@@ -334,7 +335,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             $code = $_REQUEST["code"];
 
         if (!empty($_REQUEST['error'])) {
-            Log::addErrorLog('Facebook Error: ' . Filter::get('error') . '. Reason: ' . Filter::get('error_reason'));
+            Log::addErrorLog('Facebook Error: ' . Validator::queryParams($request)->string('error') . '. Reason: ' . Validator::queryParams($request)->string('error_reason'));
             if ($_REQUEST['error_reason'] == 'user_denied') {
                 $this->error_page(I18N::translate('You must allow access to your Facebook account in order to login with Facebook.'));
             } else {
@@ -346,7 +347,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                 return;
             }
 
-            Session::put('timediff', Filter::postInteger('timediff', -43200, 50400, 0)); // Same range as date('Z')
+            Session::put('timediff', Validator::parsedBody($request)->integer('timediff', 0)); // Same range as date('Z')
             // FB Login flow has not begun so redirect to login dialog.
             Session::put('facebook_state', md5(uniqid(rand(), TRUE))); // CSRF protection
             $dialog_url = "https://www.facebook.com/dialog/oauth?client_id="

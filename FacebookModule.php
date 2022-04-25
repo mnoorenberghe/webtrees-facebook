@@ -139,8 +139,6 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         switch ($mod_action) {
             case 'connect':
                 return $this->connect();
-            case 'admin_friend_picker':
-                return $this->fetchFriendList();
             default:
                 header('HTTP/1.0 404 Not Found');
         }
@@ -445,80 +443,6 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     private function getConnectURL($returnTo='') {
         return WT_BASE_URL . "module.php?mod=" . $this->getName()
             . "&mod_action=connect" . ($returnTo ? "&url=" . urlencode($returnTo) : ""); // Workaround FB bug where "&url=" (empty value) prevents OAuth
-    }
-
-    private function fetchFriendList() {
-        global $controller;
-        $controller = new PageController();
-
-        $controller->addInlineJavaScript("
-            $('head').append('<link rel=\"stylesheet\" href=\"" . $this->assetUrl("facebook.css") ."\" />');",
-                                         PageController::JS_PRIORITY_LOW);
-
-        $preApproved = unserialize($this->getPreference('preapproved'));
-
-        if (Filter::postArray('preApproved')) {
-            $roleRows = Filter::postArray('preApproved');
-            $fbUsernames = Filter::postArray('facebook_username', WT_REGEX_USERNAME);
-            foreach($fbUsernames as $facebook_username) {
-                $facebook_username = $this->cleanseFacebookUserID($facebook_username);
-                $this->appendPreapproved($preApproved, $facebook_username, $roleRows);
-            }
-            $this->setPreference('preapproved', serialize($preApproved));
-            FlashMessages::addMessage(I18N::translate('Users successfully imported from Facebook'));
-            header("Location: module.php?mod=" . $this->getName() . "&mod_action=admin");
-            exit;
-        }
-
-        if (!Session::has('facebook_access_token')) {
-            $this->error_page(I18N::translate("You must <a href='%s'>login to the site via Facebook</a> in order to import friends from Facebook", "index.php?logout=1"));
-        }
-        $graph_url = "https://graph.facebook.com/" . self::api_dir . "me/friends?fields=first_name,last_name,name,id&access_token="
-            . Session::get('facebook_access_token');
-        $friendsResponse = File::fetchUrl($graph_url);
-        if ($friendsResponse === FALSE) {
-            $this->error_page(I18N::translate("Could not fetch your friends from Facebook. Note that this feature won't work for Facebook Apps created after 2014-04-30 due to a Facebook policy change."));
-        }
-
-        $friends = json_decode($friendsResponse);
-        if (empty($friends->data)) {
-            $this->error_page(I18N::translate("No friend data"));
-            return;
-        }
-
-        function nameSort($a, $b) {
-            return strcmp($a->last_name . " " . $a->first_name, $b->last_name . " " . $b->first_name);
-        }
-
-        usort($friends->data, "nameSort");
-        echo "<form id='facebook_friend_list' method='post' action=''>";
-        $index = 0;
-        foreach (Tree::getAll() as $tree) {
-            $class = ($index++ % 2 ? 'odd' : 'even');
-            echo "<label>" . $tree->getNameHtml() . " - " .
-                I18N::translate('Role') . FunctionsPrint::helpLink('role') . ": " .
-                FunctionsEdit::selectEditControl('preApproved['.$tree->getTreeId().'][canedit]',
-                $roles,
-                NULL,
-                NULL
-            ) .
-                "</label>";
-        }
-
-        foreach ($friends->data as $friend) {
-            $facebook_username = $this->cleanseFacebookUserID($friend->id);
-
-            // Exclude friends who are already pre-approved or are current users
-            if (isset($preApproved[$facebook_username])
-                || $this->get_wt_user_id_from_facebook_user_id($facebook_username)) {
-                continue;
-            }
-            echo "<label><input name='facebook_username[]' type='checkbox' value='" .
-                $facebook_username . "'/>" .
-                $friend->name . "</label>";
-        }
-        echo Filter::getCsrf();
-        echo "<button>Select Friends</button></form>";
     }
 
     private function login($user_id) {

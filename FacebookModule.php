@@ -360,7 +360,8 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                 try {
                     Session::forget('facebook_access_token');
                     Session::forget('facebook_state');
-                } catch (Exception $e) { }
+                } catch (\Exception $e) {
+                }
 
                 header("Location: " . $this->getConnectURL($url));
                 exit;
@@ -452,7 +453,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         $approved=$user->getPreference('verified_by_admin');
         if ($verified && $approved || $is_admin) {
             Auth::login($user);
-            Log::addAuthenticationLog('Login: ' . Auth::user()->getUserName() . '/' . Auth::user()->getRealName());
+            Log::addAuthenticationLog('Login: ' . Auth::user()->userName() . '/' . Auth::user()->realName());
 
             Session::put('locale', Auth::user()->getPreference('language'));
             Session::put('theme_id', Auth::user()->getPreference('theme'));
@@ -467,7 +468,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             Log::addAuthenticationLog('Login failed ->'.$user_name.'<- not approved');
             return -2;
         }
-        throw new Exception('Login failure: Unexpected condition');
+        throw new \Exception('Login failure: Unexpected condition');
     }
 
     public function createUser($wt_username, $name, $email, $password, $hashcode, $verifiedByAdmin, $fb_user_id) {
@@ -668,7 +669,7 @@ $(document).ready(function() {
         $result .= "<script>
         var FACEBOOK_LOGIN_TEXT = '" . addslashes(I18N::translate('Login with Facebook')) . "';
         $('head').append('<link rel=\"stylesheet\" href=\"". $this->assetUrl("facebook.css") . "\" />');" .
-        ($this->hideStandardForms ? '$(document).ready(function() {$("#login-form[name=\'login-form\'], #register-form").hide();});' : "");
+        ($this->hideStandardForms ? '$(function() {$("#login-form[name=\'login-form\'], #register-form").hide();});' : "");
         $result .= "</script>";
 
         $result .= "<script src=\"".$this->assetUrl('facebook.js')."\"></script>";

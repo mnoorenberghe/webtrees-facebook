@@ -71,15 +71,10 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
     </label>
   </p>
 
-  <button type="submit" name="saveAPI" class="btn btn-primary">
+  <button type="submit" name="saveAPI" class="btn btn-primary" value="1">
     <?= view('icons/save') ?>
     <?= I18N::translate('save') ?>
   </button>
-
-  <a href="<?= route(ControlPanel::class) ?>" class="btn btn-secondary">
-    <?= view('icons/cancel') ?>
-    <?= I18N::translate('cancel') ?>
-  </a>
 </form>
 
 <hr />
@@ -116,7 +111,12 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
       <tr>
         <td colspan="2"><select name="user_id"><?= $unlinkedOptions; ?></select></td>
         <td><input type="text" name="facebook_username" required="required" <?php echo $usernameValidationAttrs; ?> /></td>
-        <td><input type="submit" name="addLink" value="<?php echo I18N::translate('Add'); ?>"></td>
+        <td>
+          <button type="submit" name="addLink" class="btn btn-primary" value="1">
+            <?= view('icons/save') ?>
+            <?= I18N::translate('Add') ?>
+          </button>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -133,7 +133,12 @@ $usernameValidationAttrs = 'pattern="[.a-zA-Z0-9]{5,}" title="' . I18N::translat
         <?php echo I18N::translate("Import from your Facebook friends"); ?>
       </a></li>
   </ul>
-  <p><input type="submit" name="savePreapproved" value="<?php echo I18N::translate('Save'); ?>"></p>
+  <p>
+    <button type="submit" name="savePreapproved" class="btn btn-primary" value="1">
+      <?= view('icons/save') ?>
+      <?= I18N::translate('save') ?>
+    </button>
+  </p>
   <table id="preapproved">
     <thead>
       <tr>

@@ -38,6 +38,7 @@ use Fisharebest\Webtrees\Session;
 use Fisharebest\Webtrees\Site;
 use Fisharebest\Webtrees\Tree;
 use Fisharebest\Webtrees\User;
+use Fisharebest\Webtrees\Validator;
 use Fisharebest\Webtrees\Module\AbstractModule;
 use Fisharebest\Webtrees\Module\ModuleConfigInterface;
 use Fisharebest\Webtrees\Module\ModuleConfigTrait;
@@ -163,13 +164,22 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
      */
     public function postAdminAction(ServerRequestInterface $request): ResponseInterface
     {
+        $this->saveAdmin($request);
+
+        // Don't redirect otherwise FlashMessages don't work.
+        return $this->getAdminAction($request);
+    }
+
+    protected function saveAdmin(ServerRequestInterface $request)
+    {
         $preApproved = unserialize($this->getPreference('preapproved'));
 
-        if (Filter::post('saveAPI')) {
-            $this->setPreference('app_id', Filter::post('app_id', WT_REGEX_ALPHANUM));
-            $this->setPreference('app_secret', Filter::post('app_secret', WT_REGEX_ALPHANUM));
-            $this->setPreference('require_verified', Filter::post('require_verified', WT_REGEX_INTEGER, false));
-            $this->setPreference('hide_standard_forms', Filter::post('hide_standard_forms', WT_REGEX_INTEGER, false));
+        $parsedBody = Validator::parsedBody($request);
+        if ($parsedBody->string('saveAPI')) {
+            $this->setPreference('app_id', $parsedBody->string('app_id'));
+            $this->setPreference('app_secret', $parsedBody->string('app_secret'));
+            $this->setPreference('require_verified', $parsedBody->integer('require_verified', false));
+            $this->setPreference('hide_standard_forms', $parsedBody->integer('hide_standard_forms', false));
             Log::addConfigurationLog("Facebook: API settings changed");
             FlashMessages::addMessage(I18N::translate('Settings saved'));
         } else if (Filter::post('addLink')) {

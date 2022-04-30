@@ -24,6 +24,7 @@ define('WT_REGEX_ALPHA', '[a-zA-Z]+');
 define('WT_REGEX_ALPHANUM', '[a-zA-Z0-9]+');
 define('WT_REGEX_USERNAME', '[^<>"%{};]+');
 
+use Fig\Http\Message\RequestMethodInterface;
 use Fig\Http\Message\StatusCodeInterface;
 use Fisharebest\Webtrees\Auth;
 use Fisharebest\Webtrees\Controller\PageController;
@@ -33,10 +34,16 @@ use Fisharebest\Webtrees\FlashMessages;
 use Fisharebest\Webtrees\Gedcom;
 use Fisharebest\Webtrees\I18N;
 use Fisharebest\Webtrees\Log;
+use Fisharebest\Webtrees\Registry;
 use Fisharebest\Webtrees\Session;
 use Fisharebest\Webtrees\Site;
+use Fisharebest\Webtrees\Tree;
+use Fisharebest\Webtrees\User;
 use Fisharebest\Webtrees\Validator;
 use Fisharebest\Webtrees\Contracts\UserInterface;
+use Fisharebest\Webtrees\Http\RequestHandlers\HomePage;
+use Fisharebest\Webtrees\Http\RequestHandlers\UserPage;
+use Fisharebest\Webtrees\Http\ViewResponseTrait;
 use Fisharebest\Webtrees\Module\AbstractModule;
 use Fisharebest\Webtrees\Module\ModuleConfigInterface;
 use Fisharebest\Webtrees\Module\ModuleConfigTrait;
@@ -51,8 +58,10 @@ use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\JoinClause;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
-class FacebookModule extends AbstractModule implements ModuleCustomInterface, ModuleConfigInterface, ModuleGlobalInterface {
+class FacebookModule extends AbstractModule implements ModuleCustomInterface, ModuleConfigInterface, ModuleGlobalInterface, RequestHandlerInterface
+{
     const scope = 'user_birthday,user_hometown,user_location,email,user_gender,user_link';
     const user_fields = 'id,birthday,email,name,first_name,last_name,gender,hometown,link,locale,timezone,updated_time,verified';
     const user_setting_facebook_username = 'facebook_username';
@@ -81,6 +90,17 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
     use ModuleConfigTrait;
     use ModuleCustomTrait;
     use ModuleGlobalTrait;
+    use ViewResponseTrait;
+
+    /**
+     * Initialization.
+     *
+     * @return void
+     */
+    public function boot(): void
+    {
+        Registry::routeFactory()->routeMap()->get('facebook-login', '/facebook/login{/tree}', $this)->allows(RequestMethodInterface::METHOD_POST);
+    }
 
     // Implement ModuleInterface
     public function title(): string {
@@ -138,14 +158,14 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         return 'https://github.com/mnoorenberghe/webtrees-facebook/issues/';
     }
 
-    // Extend WT_Module
-    public function modAction($mod_action) {
-        switch ($mod_action) {
-            case 'connect':
-                return $this->connect();
-            default:
-                header('HTTP/1.0 404 Not Found');
-        }
+    /**
+     * @param ServerRequestInterface $request
+     *
+     * @return ResponseInterface
+     */
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        return $this->connect($request);
     }
 
     private function roles()
@@ -308,29 +328,37 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         return !empty($app_id) && !empty($app_secret);
     }
 
-    private function connect($request)
+    private function connect(ServerRequestInterface $request): ResponseInterface
     {
-        $url = Validator::parsedBody($request)->string('url', Validator::queryParams($request)->string('url', ''));
+        $tree = Validator::attributes($request)->treeOptional();
+        $user = Validator::attributes($request)->user();
+        $url  = Validator::parsedBody($request)->isLocalUrl()->string('url', Validator::queryParams($request)->isLocalUrl()->string('url', route(HomePage::class)));
         // If we’ve clicked login from the login page, we don’t want to go back there.
-        if (strpos($url, 'login.php') === 0
-            || (strpos($url, 'mod=facebook') !== false
-                && strpos($url, 'mod_action=connect') !== false)) {
+        if (strpos($url, 'login') !== false || strpos($url, 'facebook') !== false) {
             $url = '';
         }
 
         // Redirect to the homepage/$url if the user is already logged-in.
-        if (Auth::check()) {
-            header('Location: ' . Validator::attributes($request)->string('base_url') . $url);
-            exit;
+        if ($user instanceof User) {
+            return redirect($url ?: route(UserPage::class, ['tree' => $tree instanceof Tree ? $tree->name() : '']));
+        }
+
+        // No tree?  perhaps we came here from a page without one.
+        if ($tree === null) {
+            $default = Site::getPreference('DEFAULT_GEDCOM');
+            $tree    = $this->tree_service->all()->get($default) ?? $this->tree_service->all()->first();
+
+            if ($tree instanceof Tree) {
+                return redirect(route('facebook-login', ['tree' => $tree->name(), 'url' => $url]));
+            }
         }
 
         $app_id = $this->getPreference('app_id');
         $app_secret = $this->getPreference('app_secret');
-        $connect_url = $this->getConnectURL($url);
+        $connect_url = $this->getConnectURL($tree, $url);
 
         if (!$app_id || !$app_secret) {
-            $this->error_page(I18N::translate('Facebook logins have not been setup by the administrator.'));
-            return;
+            return $this->error_page(I18N::translate('Facebook logins have not been setup by the administrator.'));
         }
 
         if (isset($_REQUEST['code']))
@@ -339,14 +367,20 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         if (!empty($_REQUEST['error'])) {
             Log::addErrorLog('Facebook Error: ' . Validator::queryParams($request)->string('error') . '. Reason: ' . Validator::queryParams($request)->string('error_reason'));
             if ($_REQUEST['error_reason'] == 'user_denied') {
-                $this->error_page(I18N::translate('You must allow access to your Facebook account in order to login with Facebook.'));
+                return $this->error_page(I18N::translate('You must allow access to your Facebook account in order to login with Facebook.'));
             } else {
-                $this->error_page(I18N::translate('An error occurred trying to log you in with Facebook.'));
+                return $this->error_page(I18N::translate('An error occurred trying to log you in with Facebook.'));
             }
         } else if (empty($code) && !Session::has('facebook_access_token')) {
-            if (!Filter::checkCsrf()) {
-                echo I18N::translate('This form has expired.  Try again.');
-                return;
+            // Duplicate upstream CSRF check since this can be a GET? Try to get this exposed upstream.
+            $params        = (array) $request->getParsedBody();
+            $client_token  = $params['_csrf'] ?? $request->getHeaderLine('X-CSRF-TOKEN');
+            $session_token = Session::get('CSRF_TOKEN');
+
+            $request = $request->withParsedBody($params);
+
+            if ($client_token !== $session_token) {
+                // TODO: return $this->error_page(I18N::translate('This form has expired.  Try again.'));
             }
 
             Session::put('timediff', Validator::parsedBody($request)->integer('timediff', 0)); // Same range as date('Z')
@@ -355,7 +389,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             $dialog_url = "https://www.facebook.com/dialog/oauth?client_id="
                 . $app_id . "&redirect_uri=" . urlencode($connect_url) . "&state="
                 . Session::get('facebook_state') . "&scope=" . self::scope;
-            echo("<script> window.location.href='" . $dialog_url . "'</script>");
+            return redirect($dialog_url);
         } else if (Session::has('facebook_access_token')) {
             // User has already authorized the app and we have a token so get their info.
             $graph_url = "https://graph.facebook.com/" . self::api_dir . "me?fields=" . self::user_fields . "&access_token="
@@ -373,12 +407,11 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                 } catch (\Exception $e) {
                 }
 
-                header("Location: " . $this->getConnectURL($url));
-                exit;
+                return redirect($this->getConnectURL($tree, $url));
             }
 
             $user = json_decode($response->getBody()->getContents());
-            $this->login_or_register($user, $url);
+            return $this->login_or_register($tree, $user, $url);
         } else if (Session::has('facebook_state') && (Session::get('facebook_state') === $_REQUEST['state'])) {
             // User has already been redirected to login dialog.
             // Exchange the code for an access token.
@@ -391,12 +424,12 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
 
             if ($response->getStatusCode() !== StatusCodeInterface::STATUS_OK) {
                 Log::addErrorLog("Facebook: Couldn't exchange the code for an access token");
-                $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
+                return $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
             $params = json_decode($response->getBody()->getContents());
             if (!isset($params->access_token)) {
                 Log::addErrorLog("Facebook: The access token was empty");
-                $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
+                return $this->error_page(I18N::translate("Your Facebook code is invalid. This can happen if you hit back in your browser after login or if Facebook logins have been setup incorrectly by the administrator."));
             }
 
             Session::put('facebook_access_token', $params->access_token);
@@ -405,12 +438,12 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             $client = new Client();
             $meResponse = $client->get($graph_url);
             if ($meResponse->getStatusCode() !== StatusCodeInterface::STATUS_OK) {
-                $this->error_page(I18N::translate("Could not fetch your information from Facebook. Please try again."));
+                return $this->error_page(I18N::translate("Could not fetch your information from Facebook. Please try again."));
             }
             $user = json_decode($meResponse->getBody()->getContents());
-            $this->login_or_register($user, $url);
+            return $this->login_or_register($tree, $user, $url);
         } else {
-            $this->error_page(I18N::translate("The state does not match. You may been tricked to load this page."));
+            return $this->error_page(I18N::translate("The state does not match. You may been tricked to load this page."));
         }
     }
 
@@ -444,7 +477,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
             ->select('user_id')
             ->where('setting_name', '=', self::user_setting_facebook_username)
             ->where('setting_value', '=', $this->cleanseFacebookUserID($fbUserId))
-            ->first();
+            ->value('user_id');
     }
 
     private function cleanseFacebookUserID($user_id) {
@@ -452,9 +485,12 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         return $user_id;
     }
 
-    private function getConnectURL($returnTo='') {
-        return WT_BASE_URL . "module.php?mod=" . $this->name()
-            . "&mod_action=connect" . ($returnTo ? "&url=" . urlencode($returnTo) : ""); // Workaround FB bug where "&url=" (empty value) prevents OAuth
+    private function getConnectURL(Tree $tree, $returnTo = '')
+    {
+        return route('facebook-login', [
+            'tree' => $tree instanceof Tree ? $tree->name() : '',
+            'url' => $returnTo // TODO: Bring back workaround for FB bug where "&url=" (empty value) prevents OAuth
+        ]);
     }
 
     private function login($user_id) {
@@ -514,15 +550,16 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
      * @param object $facebookUser Facebook user
      * @param string $url          (optional) URL to redirect to afterwards.
      */
-    private function login_or_register(&$facebookUser, $url='') {
+    private function login_or_register(Tree $tree, &$facebookUser, $url = ''): ResponseInterface
+    {
         if ($this->getPreference('require_verified', 1) && empty($facebookUser->verified)) {
-            $this->error_page(I18N::translate('Only verified Facebook accounts are authorized. Please verify your account on Facebook and then try again'));
+            return $this->error_page(I18N::translate('Only verified Facebook accounts are authorized. Please verify your account on Facebook and then try again'));
         }
 
         $user_id = $this->get_wt_user_id_from_facebook_user_id($facebookUser->id);
         if (!$user_id) {
             if (!isset($facebookUser->email)) {
-                $this->error_page(I18N::translate('You must grant access to your email address via Facebook in order to use this website. Please uninstall the application on Facebook and try again.'));
+                return $this->error_page(I18N::translate('You must grant access to your email address via Facebook in order to use this website. Please uninstall the application on Facebook and try again.'));
             }
             $user = $this->user_service->findByIdentifier($facebookUser->email);
             if ($user) {
@@ -531,7 +568,6 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
         }
 
         if ($user_id) { // This is an existing user so log them in if they are approved
-
             $login_result = $this->login($user_id);
             $message = '';
             switch ($login_result) {
@@ -545,14 +581,13 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                     $user = $this->user_service->find($user_id);
                     $user->setPreference(self::user_setting_facebook_username, $this->cleanseFacebookUserID($facebookUser->id));
                     // redirect to the homepage/$url
-                    header('Location: ' . Validator::attributes($request)->string('base_url') . $url);
-                    return;
+                    return redirect($url ?: route(UserPage::class, ['tree' => $tree instanceof Tree ? $tree->name() : '']));
             }
-            $this->error_page($message);
+            return $this->error_page($message);
         } else { // This is a new Facebook user who may or may not already have a manual account
 
             if (!Site::getPreference('USE_REGISTRATION_MODULE')) {
-                $this->error_page('<p>' . I18N::translate('The administrator has disabled registrations.') . '</p>');
+                return $this->error_page('<p>' . I18N::translate('The administrator has disabled registrations.') . '</p>');
             }
 
             // check if the username is already in use
@@ -635,7 +670,7 @@ class FacebookModule extends AbstractModule implements ModuleCustomInterface, Mo
                     $controller->addInlineJavaScript('
 function verify_hash_success() {
   // now the account is approved but not logged in. Now actually login for the user.
-  window.location = "' . $this->getConnectURL($url) . '";
+  window.location = "' . $this->getConnectURL($tree, $url) . '";
 }
 
 function verify_hash_failure() {
@@ -652,13 +687,15 @@ $(document).ready(function() {
 
             } else {
                 Log::addErrorLog("Facebook: Couldn't create the user account");
-                $this->error_page('<p>' . I18N::translate('Unable to create your account.  Please try again.') . '</p>' .
-                                  '<div class="back"><a href="javascript:history.back()">' . I18N::translate('Back') . '</a></div>');
+                return $this->error_page(
+                    '<p>' . I18N::translate('Unable to create your account.  Please try again.') . '</p>' .
+                    '<div class="back"><a href="javascript:history.back()">' . I18N::translate('Back') . '</a></div>'
+                );
             }
         }
     }
 
-    private function error_page($message)
+    private function error_page($message): ResponseInterface
     {
         try {
             Session::forget('facebook_access_token');
@@ -669,8 +706,9 @@ $(document).ready(function() {
         FlashMessages::addMessage($message);
 
         return $this->viewResponse('layouts/administration', [
+            'content' => '',
             'title' => '',
-            'body' => '',
+            'tree' => NULL
         ]);
     }
 
